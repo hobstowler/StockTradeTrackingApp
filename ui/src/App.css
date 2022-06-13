@@ -1,0 +1,243 @@
+.header {
+  width: 100%;
+}
+
+.headSplash {
+  height: 30px;
+}
+
+#splashBottom {
+  border-bottom: 3px solid green;
+  height: 14px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  color: black;
+  text-align: center;
+  font-size: 10px;
+}
+
+.headMain {
+  display: inline-block;
+  background-color: green;
+  width: 100%;
+}
+
+.headMain > div {
+  width: 800px;
+  margin: 0 auto;
+}
+
+.headTitle {
+  float: left;
+  padding-right: 20px;
+  border-right: 5px solid beige;
+}
+
+.header h1 {
+  font-family: Calibri, sans-serif;
+  font-size: 32px;
+  color: beige;
+  margin: 0;
+  margin-top: 15px;
+}
+
+.header h2 {
+  font-family: "Calibri Light", sans-serif;
+  font-size: 18px;
+  text-align: right;
+  margin-top: 2px;
+}
+
+nav {
+  float: left;
+}
+
+nav a {
+  font-family: Calibri, sans-serif;
+  text-decoration: none;
+  display: inline-block;
+  border-right: 2px solid darkgreen;
+  padding: 41px 10px 28px;
+  font-size: 20px;
+  color: beige;
+  font-weight: 700;
+}
+
+nav a:hover {
+  color: black;
+  background-color: lightgreen;
+}
+
+nav a:first-child {
+}
+
+nav .active {
+  background-color: lightgreen;
+  color: black;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.body > div {
+  margin: 0 auto;
+  width: 1400px;
+  height: 100%;
+}
+
+.body > div > div {
+  display: inline-block;
+  height:100%;
+}
+
+.body > div > div#left {
+  float: left;
+  min-width: 290px;
+  border-right: 4px solid green;
+  margin-right: 6px;
+  height: available;
+}
+
+.body > div > div#center {
+  width: 800px;
+  background-color: beige;
+  margin: 0 auto;
+}
+
+.logIn {
+  width: 800px;
+  margin: 0 auto;
+  margin-bottom: 3px;
+}
+
+form {
+  font-size: 11px;
+  float: right;
+  margin-bottom: 2px;
+}
+
+form button {
+  margin-left: 5px;
+  margin-right: 5px;
+}
+
+.logIn > div {
+  text-align: right;
+  font-size: 11px;
+}
+
+.logIn > p {
+  display: inline-block;
+  color: red;
+  float: right;
+  font-size: 12px;
+  margin: 3px 0 0;
+}
+
+#tdRegister {
+  display: inline-block;
+  width: fit-content;
+}
+
+.logIn button {
+  background-color: blue;
+  border: 3px solid beige;
+  padding: 3px 8px;
+  border-radius: 10px;
+  margin-right: 20px;
+  color: beige;
+  font-weight: 700;
+  font-family: Calibri, sans-serif;
+}
+
+#logout {
+  color: green;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-block;
+}
+
+#register {
+  color: green;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+form div {
+  display: inline-block;
+  margin-left: 5px;
+}
+
+form input {
+  margin-left: 5px;
+  width: 100px;
+}
+
+.balances {
+  width: 100%;
+  display: inline-block;
+}
+
+.balances > div {
+  width: 800px;
+  margin: 0 auto;
+}
+
+table {
+  float: left;
+  margin-left: 50px;
+  margin-top: 5px;
+}
+
+td {
+  font-weight: 500;
+  font-size: 12px;
+  text-align: right;
+  padding-right: 20px;
+}
+
+tbody tr:nth-child(2) td {
+  border-top: 2px solid green;
+}
+
+tr td:nth-child(odd) {
+  padding-left: 40px;
+}
+
+tr td:first-child {
+  padding-left: 0;
+}
+
+tr td:nth-child(2) {
+  border-right: 2px solid green;
+}
+
+tr td:nth-child(even) {
+  color: green;
+}
+
+.body h1 {
+  background-color: green;
+  font-size: 24px;
+  font-font: Calibri, sans-serif;
+  font-weight: 600;
+  color: beige;
+  width: fit-content;
+  padding: 3px 250px 3px 10px;
+  margin: 0;
+}
+
+.body h2 {
+  background-color: lightgreen;
+  color: black;
+  font-family: Calibri, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 0px 150px 0px 10px;
+  width: fit-content;
+  margin: 0;
+}
