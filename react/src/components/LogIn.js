@@ -1,6 +1,13 @@
 import {useSearchParams, useNavigate, Link} from "react-router-dom";
 import {useEffect, useState} from "react";
-import {clearCookie, fetchAccessToken, getCookie, refreshAccessToken, setCookie} from "../middleware/misc";
+import {
+    checkAccessCodeExpiry,
+    clearCookie,
+    fetchAccessToken,
+    getCookie,
+    refreshAccessToken,
+    setCookie
+} from "../middleware/misc";
 import {BsFillGearFill} from 'react-icons/bs'
 import AccountIcon from "./AccountIcon";
 
@@ -52,6 +59,10 @@ export default function LogIn() {
         } else if (refresh_token && !access_token) {
             refreshAccessToken()
         }
+
+        const interval = setInterval(() => {
+            checkAccessCodeExpiry()
+        }, 1000 * 60 * 1)
     }, [])
 
     const routeTdReg = () => {

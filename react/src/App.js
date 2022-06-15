@@ -7,23 +7,63 @@ import Navigation from "./components/Navigation";
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Footer from "./components/Footer";
 import Watchlist from "./pages/Watchlist";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Stocks from "./pages/Stocks";
 import Options from "./pages/Options";
 import Crypto from "./pages/Crypto";
+import {getAccounts, getAccountPositions, getFullAccount, parsePositions} from "./middleware/accounts";
+import {checkAccessCodeExpiry} from "./middleware/misc";
 
 function App() {
     const [activePage, setActive] = useState('home')
+    const [account, updateAccount] = useState({})
+    const [balances, updateBalances] = useState({})
+    const [stocks, updateStocks] = useState([])
+    const [options, updateOptions] = useState([])
+
+    useEffect(() => {
+        checkAccessCodeExpiry()
+        getAccount()
+        //getPositions()
+        const interval = setInterval(() => {
+            getAccount()
+            //getPositions()
+        }, 1000 * 60 * 5)
+        return () => clearInterval(interval)
+    }, [])
+
+    const getAccount = () => {
+        getFullAccount()
+        .then(response => response.json())
+        .then(json => {
+            console.log(json[0])
+            updateAccount(json[0])
+            updateBalances(json[0].securitiesAccount.currentBalances)
+            let positions = parsePositions(json[0].securitiesAccount.positions)
+            console.log('stonks')
+            console.log(positions[0])
+            updateStocks(positions[0])
+            updateOptions(positions[1])
+        })
+    }
+
+    const getPositions = () => {
+        getAccountPositions()
+            .then(response => response.json()
+                .then(json => {
+                    console.log(json)
+                }))
+    }
 
     return (
         <div className="App">
             <BrowserRouter>
-                <Header activePage={activePage} setActive={setActive} />
+                <Header activePage={activePage} setActive={setActive} account={account} balances={balances} />
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home />} />
-                        <Route path='/stocks' element={<Stocks />} />
-                        <Route path='/options' element={<Options />} />>
+                        <Route path='/stocks' element={<Stocks stocks={stocks} />} />
+                        <Route path='/options' element={<Options options={options}/>} />>
                         <Route path='/crypto' element={<Crypto />} />
                         <Route path='/watch' element={<Watchlist />} />
                         <Route path='/account' element={<Watchlist />} />

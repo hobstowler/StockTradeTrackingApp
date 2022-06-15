@@ -1,9 +1,9 @@
 import Navigation from "./Navigation";
 import LogIn from "./LogIn";
 import Balances from "./Balances";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
-export default function Header({activePage, setActive}) {
+export default function Header({activePage, setActive, account, balances}) {
     const [showBalance, setShowBalance] = useState(true)
 
     return (
@@ -19,7 +19,7 @@ export default function Header({activePage, setActive}) {
                     <Navigation activePage={activePage} setActive={setActive}/>
                 </div>
             </div>
-            {showBalance ? <Balances /> : undefined}
+            {showBalance && account !== undefined ? <Balances balances={balances} /> : undefined}
             <div className='headSplash' id='splashBottom' onClick={() => setShowBalance(!showBalance)}>
                 {showBalance ? "- Collapse -" : "- Expand -"}
             </div>

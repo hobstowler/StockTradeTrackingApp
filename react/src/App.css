@@ -1,3 +1,7 @@
+body {
+  font-family: Calibri, sans-serif;
+}
+
 .header {
   width: 100%;
 }
@@ -94,18 +98,77 @@ nav .active {
   height:100%;
 }
 
+.body > div > div h2 {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 .body > div > div#left {
   float: left;
-  min-width: 290px;
+  width: 290px;
   border-right: 4px solid green;
   margin-right: 6px;
-  height: available;
 }
 
 .body > div > div#center {
   width: 800px;
   background-color: beige;
   margin: 0 auto;
+}
+
+.body > div > div#right {
+  float: right;
+  width: 290px;
+  border-left: 4px solid green;
+  margin-left: 6px;
+}
+
+.formContainer {
+  margin: 0 auto;
+  position: relative;
+  width: 650px;
+}
+
+#stockSearchForm {
+  width: 600px;
+  float: none;
+  margin: 0 auto;
+}
+
+#stockSearchForm input {
+  width: 500px;
+  float: left;
+  display: inline-block;
+}
+
+#stockSearchForm button {
+  width: 75px;
+  float: right;
+}
+
+#stockSearchForm p {
+  width: 100%;
+  margin-left: 20px;
+}
+
+.keyIndicatorContainer {
+  width: 780px;
+  margin: 0 auto;
+  margin-top: 25px;
+}
+
+.keyIndicatorContainer fieldset {
+  height: 100px;
+  border-width: 3px;
+  border-left: none;
+  border-right: none;
+}
+
+.keyIndicatorContainer legend {
+  font-size: 18px;
+  font-weight: 700;
+  margin-left: 50px;
 }
 
 .logIn {
@@ -235,9 +298,74 @@ tr td:nth-child(even) {
   background-color: lightgreen;
   color: black;
   font-family: Calibri, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 800;
   padding: 0px 150px 0px 10px;
   width: fit-content;
   margin: 0;
+}
+
+.body h3 {
+  font-size: 20px;
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.stockListItem {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.stockListItem > div {
+  display: inline-block;
+  height: 43px;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  margin-bottom: 3px;
+  padding: 3px 0px
+}
+
+.stockListItem svg {
+  margin-top: 13px;
+  margin-left: 2px;
+  color: green;
+}
+
+.stockListItem div:first-child {
+  border-left: 2px solid black;
+  float: left;
+  width: 250px;
+  margin-left: 15px;
+  padding-left: 3px;
+}
+
+.stockListItem div:last-child {
+  float: right;
+  width: 20px;
+  background-color: lightgreen;
+  vertical-align: center;
+}
+
+#left h1 {
+
+}
+
+#left h1 {
+  background-color: lightgreen;
+  display: inline-block;
+  width: 278px;
+  padding: 4px 0px 3px 10px;
+  border-bottom: 1px solid darkgreen;
+  margin-bottom: 3px;
+  border-left: 2px solid darkgreen;
+}
+
+#left h2 {
+  width: 275px;
+  display: inline-block;
+  color: beige;
+  font-size: 20px;
+  margin: 1px 0 3px 15px;
+  padding: 2px 0px 2px 4px;
+  background-color: green;
 }

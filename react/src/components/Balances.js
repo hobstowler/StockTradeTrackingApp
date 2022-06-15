@@ -2,8 +2,9 @@ import React, {useEffect, useState} from 'react'
 import {getCookie} from "../middleware/misc";
 import {getAccountBalances} from "../middleware/accounts";
 
-export default function Balances() {
-    const [balances, setBalances] = useState({
+export default function Balances({balances}) {
+    //console.log(balances)
+    /*const [balances, setBalances] = useState({
         'accountValue': 1000,
         'cash': 505,
         'buyingPower': 100,
@@ -14,7 +15,7 @@ export default function Balances() {
         'shortOptions': 150
     })
 
-    useEffect(() => {
+    /*useEffect(() => {
         getBalances()
 
         const interval = setInterval(() => {
@@ -27,30 +28,35 @@ export default function Balances() {
         getAccountBalances()
         .then(response => response.json())
         .then(json => setBalances(json[0].securitiesAccount.currentBalances))
-    }
+    }*/
 
+
+    if (balances !== undefined) {
     return (
         <div className='balances'>
             <div>
                 <table cellSpacing='0'>
                     <tbody>
                         <tr>
-                            <td>Account Value:</td><td>${balances.equity}</td>
+                            <td>Account Value:</td><td>${balances.liquidationValue || ''}</td>
                             <td>Cash Balance:</td><td><div className="balNum">${balances.cashBalance}</div></td>
                         </tr>
                         <tr>
                             <td>Stock Buying Power:</td><td><div className="balNum">${balances.buyingPower}</div></td>
                             <td>Long Stocks:</td><td><div className="balNum">${balances.longMarketValue}</div></td>
-                            <td>Short Stocks:</td><td><div className="balNum">${balances.shortMarketValue}</div></td>
+                            <td>Short Stocks:</td><td><div className="balNum">${balances.shortMarketValue || ''}</div></td>
                         </tr>
                         <tr>
-                            <td>Option Buying Power:</td><td><div className="balNum">${balances.buyingPowerNonMarginableTrade}</div></td>
-                            <td>Long Options:</td><td><div className="balNum">${balances.longOptionMarketValue}</div></td>
-                            <td>Short Options:</td><td><div className="balNum">${balances.shortOptionMarketValue}</div></td>
+                            <td>Option Buying Power:</td><td><div className="balNum">${balances.buyingPowerNonMarginableTrade || ''}</div></td>
+                            <td>Long Options:</td><td><div className="balNum">${balances.longOptionMarketValue || ''}</div></td>
+                            <td>Short Options:</td><td><div className="balNum">${balances.shortOptionMarketValue || ''}</div></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    )
+    )}
+    else {
+        return(<div></div>)
+    }
 }

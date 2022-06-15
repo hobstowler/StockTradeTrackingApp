@@ -1,9 +1,11 @@
 import React from 'react';
 
-export default class Watchlist extends React.Component {
-    render() {
-      return (
-        <div class="body">WATCHLIST</div>
-      )
-    }
-  }
+export default function Watchlist() {
+    return (
+        <div>
+            <div id='left'>left</div>
+            <div id='center'>center</div>
+            <div id='right'>right</div>
+        </div>
+    )
+}
