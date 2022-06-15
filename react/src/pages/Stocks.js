@@ -2,6 +2,7 @@ import React from 'react';
 import StockList from "../components/StockList";
 import StockWatchList from "../components/StockWatchList";
 import KeyIndicators from "../components/KeyIndicators";
+import OpenOrders from "../components/OpenOrders";
 
 export default function Stocks({stocks}) {
     console.log(stocks)
@@ -11,6 +12,7 @@ export default function Stocks({stocks}) {
                 <StockList long={stocks} />
             </div>
             <div id='center'>
+                <OpenOrders />
                 <div className='formContainer'>
                     <form id='stockSearchForm'>
                         <input type='text' />

@@ -113,7 +113,6 @@ nav .active {
 
 .body > div > div#center {
   width: 800px;
-  background-color: beige;
   margin: 0 auto;
 }
 
@@ -169,6 +168,34 @@ nav .active {
   font-size: 18px;
   font-weight: 700;
   margin-left: 50px;
+}
+
+.openOrdersContainer {
+  width: 800px;
+  margin: 0px 0px 25px 0px;
+  background-color: beige;
+}
+
+.openOrdersContainer svg {
+  color: gold;
+  margin-top: 4px;
+  padding-right: 40px;
+  padding-left: 10px;
+  vertical-align: bottom;
+}
+
+.openOrdersContainer h3 {
+  background-color: green;
+  cursor: pointer;
+  height: fit-content;
+  padding-bottom: 4px;
+  border-width: 3px;
+  border-left: none;
+  border-right: none;
+}
+
+.openOrdersContainer legend {
+  cursor: pointer;
 }
 
 .logIn {

@@ -55,6 +55,8 @@ export default function LogIn() {
 
         if (code) {
             fetchAccessToken(code)
+                //.then(json => console.log('logged in'))
+            setLogIn(true)
             navigate('/')
         } else if (refresh_token && !access_token) {
             refreshAccessToken()
