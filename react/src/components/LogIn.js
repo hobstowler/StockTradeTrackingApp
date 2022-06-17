@@ -11,12 +11,11 @@ import {
 import {BsFillGearFill} from 'react-icons/bs'
 import AccountIcon from "./AccountIcon";
 
-export default function LogIn() {
+export default function LogIn({isLoggedIn, setLogIn}) {
     const [params, setParams] = useSearchParams()
     const navigate = useNavigate()
 
     const [tdReg, setTdReg] = useState(false)
-    const [isLoggedIn, setLogIn] = useState(false)
     const [register, setRegister] = useState(false)
     const [username, setUsername] = useState('Username')
     const [password, setPassword] = useState('Password')
@@ -149,9 +148,14 @@ export default function LogIn() {
             if (response.status == 200) {
                 setLogIn(false)
                 clearCookie('app_access_token')
+                /*clearCookie('access_token')
+                clearCookie('access_token_expiry')
+                clearCookie('refresh_token')
+                clearCookie('refresh_token_expiry')*/
                 setUsername('Username')
                 setPassword('Password')
                 setApiKey('API Key')
+                navigate('/')
             }
         })
     }

@@ -15,9 +15,11 @@ import {getAccounts, getAccountPositions, getFullAccount, parsePositions} from "
 import {checkAccessCodeExpiry} from "./middleware/misc";
 
 function App() {
+    const [isLoggedIn, setLogIn] = useState(false)
     const [activePage, setActive] = useState('home')
     const [account, updateAccount] = useState({})
     const [balances, updateBalances] = useState({})
+    const [initialBalances, updateInitialBalances] = useState({})
     const [stocks, updateStocks] = useState([])
     const [options, updateOptions] = useState([])
 
@@ -39,26 +41,23 @@ function App() {
             console.log(json[0])
             updateAccount(json[0])
             updateBalances(json[0].securitiesAccount.currentBalances)
+            updateInitialBalances(json[0].securitiesAccount.initialBalances)
             let positions = parsePositions(json[0].securitiesAccount.positions)
-            console.log('stonks')
-            console.log(positions[0])
             updateStocks(positions[0])
             updateOptions(positions[1])
         })
     }
 
-    const getPositions = () => {
-        getAccountPositions()
-            .then(response => response.json()
-                .then(json => {
-                    console.log(json)
-                }))
-    }
-
     return (
         <div className="App">
             <BrowserRouter>
-                <Header activePage={activePage} setActive={setActive} account={account} balances={balances} />
+                <Header activePage={activePage}
+                        setActive={setActive}
+                        account={account}
+                        balances={balances}
+                        initialBalances={initialBalances}
+                        isLoggedIn={isLoggedIn}
+                        setLogIn={setLogIn}/>
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home />} />

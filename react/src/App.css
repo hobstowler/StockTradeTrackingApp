@@ -277,36 +277,36 @@ form input {
   margin: 0 auto;
 }
 
-table {
+.balances table {
   float: left;
   margin-left: 50px;
   margin-top: 5px;
 }
 
-td {
+.balances td {
   font-weight: 500;
   font-size: 12px;
   text-align: right;
   padding-right: 20px;
 }
 
-tbody tr:nth-child(2) td {
+.balances tbody tr:nth-child(2) td {
   border-top: 2px solid green;
 }
 
-tr td:nth-child(odd) {
+.balances tr td:nth-child(odd) {
   padding-left: 40px;
 }
 
-tr td:first-child {
+.balances tr td:first-child {
   padding-left: 0;
 }
 
-tr td:nth-child(2) {
+.balances tr td:nth-child(2) {
   border-right: 2px solid green;
 }
 
-tr td:nth-child(even) {
+.balances tr td:nth-child(even) {
   color: green;
 }
 
@@ -395,4 +395,15 @@ tr td:nth-child(even) {
   margin: 1px 0 3px 15px;
   padding: 2px 0px 2px 4px;
   background-color: green;
+}
+
+.stockListItem table {
+  font-size: 14px;
+  width: 100%;
+}
+
+.stockListItem td:first-child {
+  width: 20%;
+  text-align: right;
+  border-right: 2px solid green;
 }

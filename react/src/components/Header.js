@@ -3,13 +3,13 @@ import LogIn from "./LogIn";
 import Balances from "./Balances";
 import {useEffect, useState} from "react";
 
-export default function Header({activePage, setActive, account, balances}) {
+export default function Header({isLoggedIn, setLogIn, activePage, setActive, account, balances}) {
     const [showBalance, setShowBalance] = useState(true)
 
     return (
         <div className='header'>
             <div className='headSplash' id='splashTop'></div>
-            <LogIn />
+            <LogIn isLoggedIn={isLoggedIn} setLogIn={setLogIn}/>
             <div className='headMain'>
                 <div>
                     <div className='headTitle'>

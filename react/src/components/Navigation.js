@@ -9,11 +9,11 @@ export default function Navigation({activePage, setActive}) {
         {url: '/watch', label: 'watch'}/*,
         {url: '/account', label: 'account'}*/
     ]
+
     return (
         <nav>
             {pages.map((page, i) => {
-                let {label} = page
-                return <NavigationTab page={page} key={i} active={{activePage} === {label} ? 'active' : 'inactive'} />})
+                return <NavigationTab page={page} key={i} setActive={setActive} active={activePage === page.label ? 'active' : 'inactive'} />})
             }
         </nav>
     )

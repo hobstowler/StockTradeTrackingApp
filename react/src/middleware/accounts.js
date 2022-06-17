@@ -53,7 +53,6 @@ export function parsePositions(positions) {
     let options = []
 
     for (let i = 0; i < positions.length; i++) {
-        console.log(positions[0])
         let type = positions[i].instrument.assetType
         if (type === 'EQUITY') {
             stocks.push(positions[i])
