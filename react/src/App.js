@@ -21,8 +21,17 @@ function App() {
     const [account, updateAccount] = useState({})
     const [balances, updateBalances] = useState({})
     const [initialBalances, updateInitialBalances] = useState({})
-    const [stocks, updateStocks] = useState([])
-    const [options, updateOptions] = useState([])
+    const [positions, updatePositions] = useState({
+        stocks: {
+            longStocks: [],
+            shortStocks: []
+        },
+        options: {
+            longOptions: [],
+            shortOptions: []
+        }
+    })
+    const [openOrders, updateOpenOrders] = useState([])
 
     useEffect(() => {
         checkAccessCodeExpiry()
@@ -43,9 +52,9 @@ function App() {
             updateAccount(json[0])
             updateBalances(json[0].securitiesAccount.currentBalances)
             updateInitialBalances(json[0].securitiesAccount.initialBalances)
-            let positions = parsePositions(json[0].securitiesAccount.positions)
-            updateStocks(positions[0])
-            updateOptions(positions[1])
+            updatePositions(parsePositions(json[0].securitiesAccount.positions))
+            console.log(json[0].securitiesAccount.orderStrategies)
+            updateOpenOrders(json[0].securitiesAccount.orderStrategies)
         })
     }
 
@@ -60,9 +69,9 @@ function App() {
                         setLogIn={setLogIn}/>
                 <div className='body'>
                     <Routes>
-                        <Route path='/' element={<Home setActive={setActive} />} />
-                        <Route path='/stocks' element={<Stocks stocks={stocks} setActive={setActive} />} />
-                        <Route path='/options' element={<Options options={options} setActive={setActive} />} />>
+                        <Route path='/' element={<Home setActive={setActive} positions={positions} openOrders={openOrders} />} />
+                        <Route path='/stocks' element={<Stocks stocks={positions.stocks} openOrders={openOrders} setActive={setActive} />} />
+                        <Route path='/options' element={<Options options={positions.options} openOrders={openOrders} setActive={setActive} />} />>
                         <Route path='/crypto' element={<Crypto setActive={setActive} />} />
                         <Route path='/watch' element={<Watchlist setActive={setActive} />} />
                         <Route path='/account' element={<Account setActive={setActive} />} />

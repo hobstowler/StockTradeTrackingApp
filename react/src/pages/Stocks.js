@@ -2,9 +2,9 @@ import React, {useEffect} from 'react';
 import StockList from "../components/StockList";
 import StockWatchList from "../components/StockWatchList";
 import KeyIndicators from "../components/KeyIndicators";
-import OpenOrders from "../components/OpenOrders";
+import OpenOrdersModule from "../components/OpenOrdersModule";
 
-export default function Stocks({stocks, setActive}) {
+export default function Stocks({stocks, openOrders, setActive}) {
     useEffect(() => {
         setActive('stocks')
     }, [])
@@ -13,10 +13,10 @@ export default function Stocks({stocks, setActive}) {
     return (
         <div>
             <div id='left'>
-                <StockList long={stocks} />
+                <StockList long={stocks.longStocks} short={stocks.shortStocks}/>
             </div>
             <div id='center'>
-                <OpenOrders />
+                <OpenOrdersModule openOrders={openOrders}/>
                 <div className='formContainer'>
                     <form id='stockSearchForm'>
                         <input type='text' />

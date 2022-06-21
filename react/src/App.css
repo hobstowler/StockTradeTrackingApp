@@ -407,3 +407,35 @@ form input {
   text-align: right;
   border-right: 2px solid green;
 }
+
+.openOrderItemContainer {
+  width: 780px;
+  margin: 2px 10px;
+  height: 26px;
+}
+
+.openOrderItemContainer > div:first-child {
+  display: inline-block;
+  width: 668px;
+  padding: 2px 0px 3px;
+  border: 1px solid black;
+  border-radius: 6px;
+  padding-left: 6px;
+}
+
+.openOrderExpander {
+  display: inline-block;
+  background-color: green;
+  margin: 3px 5px 0px 5px;
+  border: 1px solid black;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.openOrderItemContainer svg {
+  margin: 0;
+  padding: 2px 0px 2px;
+  width: 20px;
+  vertical-align: center;
+  color: beige;
+}

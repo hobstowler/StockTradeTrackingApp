@@ -49,16 +49,37 @@ export function getFullAccount() {
 }
 
 export function parsePositions(positions) {
-    let stocks = []
-    let options = []
+    let longStocks = []
+    let shortStocks = []
+    let longOptions = []
+    let shortOptions = []
 
     for (let i = 0; i < positions.length; i++) {
         let type = positions[i].instrument.assetType
         if (type === 'EQUITY') {
-            stocks.push(positions[i])
+            if (positions[i].longQuantity !== 0) {
+                longStocks.push(positions[i])
+            }
+            if (positions[i].shortQuantity !== 0) {
+                shortStocks.push(positions[i])
+            }
         } else if (type === 'OPTION') {
-            options.push(positions[i])
+            if (positions[i].longQuantity !== 0) {
+                longOptions.push(positions[i])
+            }
+            if (positions[i].shortQuantity !== 0) {
+                shortOptions.push(positions[i])
+            }
         }
     }
-    return [stocks, options]
+    return {
+        stocks: {
+            longStocks: longStocks,
+            shortStocks: shortStocks
+        },
+        options: {
+            longOptions: longOptions,
+            shortOptions: shortOptions
+        }
+    }
 }
