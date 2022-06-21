@@ -3,7 +3,7 @@ import LogIn from "./LogIn";
 import Balances from "./Balances";
 import {useEffect, useState} from "react";
 
-export default function Header({isLoggedIn, setLogIn, activePage, setActive, account, balances}) {
+export default function Header({isLoggedIn, setLogIn, activePage, account, balances}) {
     const [showBalance, setShowBalance] = useState(true)
 
     return (
@@ -16,7 +16,7 @@ export default function Header({isLoggedIn, setLogIn, activePage, setActive, acc
                         <h1>The Ugly Trading App</h1>
                         <h2>Powered by TD Ameritrade</h2>
                     </div>
-                    <Navigation activePage={activePage} setActive={setActive}/>
+                    <Navigation activePage={activePage} />
                 </div>
             </div>
             {showBalance && account !== undefined ? <Balances balances={balances} /> : undefined}

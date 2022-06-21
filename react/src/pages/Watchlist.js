@@ -1,6 +1,10 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 
-export default function Watchlist() {
+export default function Watchlist({setActive}) {
+    useEffect(() => {
+        setActive('watch')
+    }, [])
+
     return (
         <div>
             <div id='left'>left</div>

@@ -1,6 +1,6 @@
 import NavigationTab from "./NavigationTab";
 
-export default function Navigation({activePage, setActive}) {
+export default function Navigation({activePage}) {
     const pages = [
         {url: '/', label: 'home'},
         {url: '/stocks', label: 'stocks'},
@@ -13,7 +13,7 @@ export default function Navigation({activePage, setActive}) {
     return (
         <nav>
             {pages.map((page, i) => {
-                return <NavigationTab page={page} key={i} setActive={setActive} active={activePage === page.label ? 'active' : 'inactive'} />})
+                return <NavigationTab page={page} key={i} active={activePage === page.label ? 'active' : 'inactive'} />})
             }
         </nav>
     )

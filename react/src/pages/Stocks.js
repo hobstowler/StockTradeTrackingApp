@@ -1,10 +1,14 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import StockList from "../components/StockList";
 import StockWatchList from "../components/StockWatchList";
 import KeyIndicators from "../components/KeyIndicators";
 import OpenOrders from "../components/OpenOrders";
 
-export default function Stocks({stocks}) {
+export default function Stocks({stocks, setActive}) {
+    useEffect(() => {
+        setActive('stocks')
+    }, [])
+
     console.log(stocks)
     return (
         <div>

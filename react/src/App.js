@@ -13,6 +13,7 @@ import Options from "./pages/Options";
 import Crypto from "./pages/Crypto";
 import {getAccounts, getAccountPositions, getFullAccount, parsePositions} from "./middleware/accounts";
 import {checkAccessCodeExpiry} from "./middleware/misc";
+import Account from "./pages/Account";
 
 function App() {
     const [isLoggedIn, setLogIn] = useState(false)
@@ -52,7 +53,6 @@ function App() {
         <div className="App">
             <BrowserRouter>
                 <Header activePage={activePage}
-                        setActive={setActive}
                         account={account}
                         balances={balances}
                         initialBalances={initialBalances}
@@ -60,12 +60,12 @@ function App() {
                         setLogIn={setLogIn}/>
                 <div className='body'>
                     <Routes>
-                        <Route path='/' element={<Home />} />
-                        <Route path='/stocks' element={<Stocks stocks={stocks} />} />
-                        <Route path='/options' element={<Options options={options}/>} />>
-                        <Route path='/crypto' element={<Crypto />} />
-                        <Route path='/watch' element={<Watchlist />} />
-                        <Route path='/account' element={<Watchlist />} />
+                        <Route path='/' element={<Home setActive={setActive} />} />
+                        <Route path='/stocks' element={<Stocks stocks={stocks} setActive={setActive} />} />
+                        <Route path='/options' element={<Options options={options} setActive={setActive} />} />>
+                        <Route path='/crypto' element={<Crypto setActive={setActive} />} />
+                        <Route path='/watch' element={<Watchlist setActive={setActive} />} />
+                        <Route path='/account' element={<Account setActive={setActive} />} />
                     </Routes>
                 </div>
                 <Footer />

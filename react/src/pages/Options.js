@@ -1,6 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 
-export default function Options() {
+export default function Options({setActive}) {
+    useEffect(() => {
+        setActive('options')
+    }, [])
 
     return (
         <div>
