@@ -25,6 +25,10 @@ func accountBalances(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, you're getting your account balances.")
 }
 
+func getStock(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "You're getting some stocks")
+}
+
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("ui/public/index.html")))
 
@@ -34,6 +38,8 @@ func main() {
 	http.HandleFunc("/auth/register", register)
 
 	http.HandleFunc("/account/balances", accountBalances)
+
+	http.HandleFunc("/stocks", getStock)
 
 	http.ListenAndServe(":3000", nil)
 }
