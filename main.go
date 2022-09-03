@@ -1,45 +1,64 @@
-package UglyTradingApp
+package main
 
 import (
-	"fmt"
-	"net/http"
+	"github.com/gin-gonic/contrib/static"
+	"github.com/gin-gonic/gin"
 )
 
-func login(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, you're logging in.")
+func login(c *gin.Context) {
+	c.JSON(200, "You are logging in")
 }
 
-func logout(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, you're logging out.")
+func logout(c *gin.Context) {
+	c.JSON(200, "You are logging out")
 }
 
-func register(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, you're registering.")
+func register(c *gin.Context) {
+	c.JSON(200, "You are registering")
 }
 
-func changePassword(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, you're changing your password.")
+func changePassword(c *gin.Context) {
+	c.JSON(200, "You are changing your password")
 }
 
-func accountBalances(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, you're getting your account balances.")
+func getAPIKey(c *gin.Context) {
+	c.JSON(200, "Fetching API Key.")
 }
 
-func getStock(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "You're getting some stocks")
+func getMarketOpen(c *gin.Context) {
+	c.JSON(20, "This doesn't work yet.")
+}
+
+func getSymbol(c *gin.Context) {
+	params := c.Param("symbol")
+	c.JSON(200, "Don't see anything for "+params+"...")
+}
+
+func getAccountBalances(c *gin.Context) {
+	c.JSON(200, "Here you go!")
 }
 
 func main() {
-	http.Handle("/", http.FileServer(http.Dir("ui/public/index.html")))
+	router := gin.Default()
+	router.Use(static.Serve("/", static.LocalFile("./ui/build", true)))
 
-	http.HandleFunc("/auth/login", login)
-	http.HandleFunc("/auth/logout", logout)
-	http.HandleFunc("/auth/change_password", changePassword)
-	http.HandleFunc("/auth/register", register)
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "sure",
+		})
+	})
 
-	http.HandleFunc("/account/balances", accountBalances)
+	router.POST("/auth/login", login)
+	router.POST("/auth/logout", logout)
+	router.POST("/auth/register", register)
+	router.PUT("/auth/change_password", changePassword)
+	router.GET("/auth/get_api", getAPIKey)
 
-	http.HandleFunc("/stocks", getStock)
+	router.GET("/market_time", getMarketOpen)
 
-	http.ListenAndServe(":3000", nil)
+	router.GET("/account/balances", getAccountBalances)
+
+	router.GET("/stocks/ticker/:symbol", getSymbol)
+
+	router.Run(":3001")
 }
