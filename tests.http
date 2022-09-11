@@ -1,0 +1,17 @@
+###
+POST http://127.0.0.1:3001/auth/login HTTP/1.1
+content-type: application/json
+
+{
+  "username": "hobs",
+  "password": "10"
+}
+
+###
+POST http://127.0.0.1:3001/auth/register HTTP/1.1
+content-type: application/json
+
+{
+  "username": "erin",
+  "password": "Bartl3by"
+}
