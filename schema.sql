@@ -7,6 +7,3 @@ CREATE TABLE user (
   email varchar(50),
   api_key varchar(50)
 );
-
-INSERT INTO USER (USERNAME, password, api_key)
-VALUES ('hobs','1','54321');

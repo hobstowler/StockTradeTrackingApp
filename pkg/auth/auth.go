@@ -70,11 +70,6 @@ func (r *Repository) register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Username and/or password are required.")
 		return
 	}
-	//if req.API == "" {
-	//	c.JSON(http.StatusBadRequest, "API Key is required.")
-	//	return
-	//}
-	// Check if username is already in use.
 	var result string
 	err := r.App.DB.QueryRow(`SELECT username FROM user where username = $1`, req.Username).Scan(&result)
 	if err != nil && err.Error() != "sql: no rows in result set" {
@@ -87,7 +82,9 @@ func (r *Repository) register(c *gin.Context) {
 	}
 
 	hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	_, err = r.App.DB.Exec(`INSERT INTO user (username, password, email, api_key) VALUES ($1, $2, $3, $4)`, req.Username, hash, req.Email, req.API)
+	_, err = r.App.DB.Exec(
+		`INSERT INTO user (username, password, email, api_key) VALUES ($1, $2, $3, $4)`,
+		req.Username, hash, req.Email, req.API)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err.Error())
 		return
@@ -101,7 +98,36 @@ func (r *Repository) changePassword(c *gin.Context) {
 		c.AbortWithError(http.StatusBadRequest, err)
 		return
 	}
-	c.JSON(200, "You are changing your password")
+
+	// Check password hash
+	if r.checkPassword(req.Username, req.Password) == false {
+		c.JSON(http.StatusBadRequest, "Incorrect password.")
+		return
+	}
+
+	// Change the password and set the HTTP response
+	hash, _ := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	_, err := r.App.DB.Exec(`UPDATE user set password = $1 where username = $2`, hash, req.Username)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, "Password successfully changed.")
+}
+
+func (r *Repository) checkPassword(u string, p string) bool {
+	var result string
+	err := r.App.DB.QueryRow(`SELECT password FROM user where username = $1`, u).Scan(&result)
+	if err != nil {
+		fmt.Println(err.Error())
+		return false
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(result), []byte(p))
+	if err != nil {
+		fmt.Println("maybe? " + err.Error())
+		return false
+	}
+	return true
 }
 
 func (r *Repository) getAPIKey(c *gin.Context) {

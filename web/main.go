@@ -13,7 +13,7 @@ import (
 func main() {
 
 	app := config.AppConfig{
-		InitDB: false,
+		InitDB: true,
 		DB:     config.GetDB(),
 	}
 	if app.InitDB {
