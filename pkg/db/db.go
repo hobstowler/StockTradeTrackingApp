@@ -1,16 +1,17 @@
-package config
+package db
 
 import (
+	"UglyTradingApp/pkg/config"
 	"database/sql"
 	"fmt"
 	_ "modernc.org/sqlite"
 	"os"
 )
 
-const path string = "./users.sqlite3"
+const path string = "./pkg/db/users.sqlite3"
 const schema string = "./schema.sql"
 
-func InitDB(a *AppConfig) {
+func InitDB(a *config.AppConfig) {
 	db := a.DB
 
 	//read the schema into a string that can be executed

@@ -29,9 +29,10 @@ export default function LogIn({isLoggedIn, setLogIn}) {
         let refresh_token = getCookie('refresh_token')
 
         let app_access_token = getCookie('app_access_token')
+        console.log(app_access_token)
         if (app_access_token) {
             fetch('/auth/login', {
-                method: 'GET',
+                method: 'POST',
                 headers: {'Content-Type': 'application/json',
                     'Authorization': 'Bearer ' + app_access_token}
             })
@@ -97,7 +98,7 @@ export default function LogIn({isLoggedIn, setLogIn}) {
             if (response.status === 200) {
                 response.json().then(json => {
                     setLogIn(true)
-                    setCookie('app_access_token', json.access_token, 30*24*60*60)
+                    //setCookie('app_access_token', json.access_token, 30*24*60*60)
                     setPassword('')
                     setError('')
                 })
@@ -118,7 +119,7 @@ export default function LogIn({isLoggedIn, setLogIn}) {
                 'username': username,
                 'password': password,
                 'email': email,
-                'API key': apiKey
+                'apiKey': apiKey
             })
         })
         .then(response => {

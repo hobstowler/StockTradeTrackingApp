@@ -12,7 +12,7 @@ POST http://127.0.0.1:3001/auth/register HTTP/1.1
 content-type: application/json
 
 {
-  "username": "erin",
+  "username": "ERIn",
   "password": "Bartl3by"
 }
 
@@ -22,8 +22,8 @@ content-type: application/json
 
 {
   "username": "erin",
-  "password": "Bartl3by",
-  "newPassword": "Bartl3by!!"
+  "password": "Bartl3by@!",
+  "newPassword": "Bartl3by!@"
 }
 
 ###

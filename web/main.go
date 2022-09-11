@@ -5,6 +5,7 @@ import (
 	"UglyTradingApp/pkg/auth"
 	"UglyTradingApp/pkg/config"
 	"UglyTradingApp/pkg/crypto"
+	"UglyTradingApp/pkg/db"
 	"UglyTradingApp/pkg/stocks"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
@@ -13,11 +14,11 @@ import (
 func main() {
 
 	app := config.AppConfig{
-		InitDB: true,
-		DB:     config.GetDB(),
+		InitDB: false,
+		DB:     db.GetDB(),
 	}
 	if app.InitDB {
-		config.InitDB(&app)
+		db.InitDB(&app)
 	}
 
 	router := gin.Default()
