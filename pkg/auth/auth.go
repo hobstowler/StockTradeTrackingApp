@@ -134,9 +134,13 @@ func (r *Repository) loginWithJWT(accessString string, c *gin.Context) {
 	username := claims.Username
 	var result string
 	err = r.App.DB.QueryRow(`SELECT * from user where username = $1`, username).Scan(&result)
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
+	if err != nil {
+		if err.Error() != "sql: no rows in result set" {
+			c.JSON(http.StatusInternalServerError, err.Error())
+			return
+		} else {
+			c.JSON(http.StatusUnauthorized, "User does not exist.")
+		}
 	}
 	c.JSON(http.StatusOK, "Welcome, "+username)
 }
