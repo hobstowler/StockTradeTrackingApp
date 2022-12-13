@@ -246,7 +246,7 @@ func (r *Repository) getAPIKey(c *gin.Context) {
 }
 
 func (r *Repository) oAuth(c *gin.Context) {
-	c.Redirect(http.StatusFound, c.Request.Host+"/auth/return_auth")
+	c.Redirect(http.StatusFound, "/auth/return_auth")
 }
 
 func (r *Repository) returnAuth(c *gin.Context) {
