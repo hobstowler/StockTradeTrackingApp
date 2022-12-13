@@ -49,6 +49,7 @@ func InitRepo(a *config.AppConfig) {
 
 func (r *Repository) login(c *gin.Context) {
 	accessToken, err := c.Cookie("app_access_token")
+	fmt.Println(accessToken)
 	if err == nil {
 		r.loginWithJWT(accessToken, c)
 		return
@@ -117,6 +118,10 @@ func (r *Repository) login(c *gin.Context) {
 	c.JSON(http.StatusOK, "Successfully logged in as '"+username+"'.")
 }
 
+func validateJWT() {
+
+}
+
 func (r *Repository) loginWithJWT(accessString string, c *gin.Context) {
 	fmt.Println(accessString)
 	fmt.Println("Logging with JWT")
@@ -128,7 +133,7 @@ func (r *Repository) loginWithJWT(accessString string, c *gin.Context) {
 		fmt.Println(err)
 	}
 	if !token.Valid {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("Bad token."))
+		c.AbortWithError(http.StatusUnauthorized, errors.New("bad token"))
 	}
 
 	username := claims.Username
