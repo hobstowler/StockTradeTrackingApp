@@ -39,6 +39,8 @@ func Routes(g *gin.Engine) {
 	auth.POST("/register", Repo.register)
 	auth.PUT("/change_password", Repo.changePassword)
 	auth.GET("/get_api", Repo.getAPIKey)
+	auth.GET("/oauth", Repo.oAuth)
+	auth.GET("/return_auth", Repo.returnAuth)
 }
 
 func InitRepo(a *config.AppConfig) {
@@ -250,4 +252,16 @@ func (r *Repository) getAPIKey(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "Incorrect password.")
 		return
 	}
+}
+
+func (r *Repository) oAuth(c *gin.Context) {
+	c.Redirect(http.StatusFound, "/auth/return_auth")
+}
+
+func (r *Repository) returnAuth(c *gin.Context) {
+	c.JSON(200, "hello")
+}
+
+func validateJWT(jwt string) string {
+	return ""
 }
