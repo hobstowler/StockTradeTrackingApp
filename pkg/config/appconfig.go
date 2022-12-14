@@ -6,4 +6,5 @@ type AppConfig struct {
 	InitDB   bool
 	DB       *sql.DB
 	ClientId string
+	OAuth    string
 }

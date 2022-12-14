@@ -2,11 +2,15 @@ package auth
 
 import (
 	"UglyTradingApp/pkg/config"
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
+	"io"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -118,10 +122,6 @@ func (r *Repository) login(c *gin.Context) {
 	c.SetCookie("app_access_token", tokenString, int(timeAdded.Seconds()), "/", "localhost", true, true)
 	c.SetCookie("app_refresh_token", refreshTokenString, int(timeAdded.Seconds()*2*24*30), "/", "localhost", true, true)
 	c.JSON(http.StatusOK, "Successfully logged in as '"+username+"'.")
-}
-
-func validateJWT() {
-
 }
 
 func (r *Repository) loginWithJWT(accessString string, c *gin.Context) {
@@ -254,12 +254,101 @@ func (r *Repository) getAPIKey(c *gin.Context) {
 	}
 }
 
+// Generate a state variable
+func createStateVariable() string {
+	state := ""
+	for i := 0; i < 10; i++ {
+		randChar := rand.Intn(26) + 97
+		randNum := rand.Intn(10)
+		state = fmt.Sprintf(state, randChar, randNum)
+	}
+	return state
+}
+
 func (r *Repository) oAuth(c *gin.Context) {
-	c.Redirect(http.StatusFound, "/auth/return_auth")
+	// Generate state and write to DB
+	valid := false
+	attempts := 5
+	var state string
+	for !valid {
+		state = createStateVariable()
+		_, err := r.App.DB.Exec(`INSERT INTO state SET state = $1`, state)
+		if err == nil {
+			valid = true // should attempt another state variable
+		}
+		attempts--
+		if attempts == 0 {
+			panic(err)
+		}
+	}
+
+	// Build the redirect URL
+	var authBuilder strings.Builder
+	authBuilder.WriteString("https://accounts.google.com/o/oauth2/v2/auth")
+	authBuilder.WriteString(fmt.Sprintf("?response_type=code&client_id=%s", r.App.ClientId))
+	authBuilder.WriteString(fmt.Sprintf("&redirect_uri=%s", c.Request.URL.Host))
+	authBuilder.WriteString(fmt.Sprintf("&scope=profile&state=%s", state))
+	authUrl := authBuilder.String()
+
+	c.Redirect(http.StatusFound, authUrl)
+}
+
+type token struct {
+	Code         string `json:"code"`
+	ClientId     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+	RedirectUri  string `json:"redirect_uri"`
+	GrantType    string `json:"grant_type"`
 }
 
 func (r *Repository) returnAuth(c *gin.Context) {
-	c.JSON(200, "hello")
+	state := c.Query("state")
+	code := c.Query("code")
+
+	var result string
+	err := r.App.DB.QueryRow(`SELECT state FROM state where state = $1`, state).Scan(&result)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "Error retrieving state variable")
+		return
+	}
+	if result != state {
+		c.JSON(http.StatusInternalServerError, "Bad state variable in request.")
+		return
+	}
+
+	tokenJson := &token{
+		Code:         code,
+		ClientId:     r.App.ClientId,
+		ClientSecret: r.App.OAuth,
+		RedirectUri:  c.Request.URL.Host + "/auth/return_auth",
+		GrantType:    "authorization_code",
+	}
+	tokenJSONPayload, _ := json.Marshal(tokenJson)
+	bodyReader := bytes.NewReader(tokenJSONPayload)
+	tokenURL := "https://oauth2.googleapis.com/token"
+	req, err := http.NewRequest(http.MethodPost, tokenURL, bodyReader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "Error creating token request.")
+		return
+	}
+
+	// Make request to get token from Google
+	res, err := http.DefaultClient.Do(req)
+	if res.StatusCode != http.StatusOK {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error in token response: %s", err))
+		return
+	}
+	defer res.Body.Close()
+
+	resp, err := io.ReadAll(res.Body)
+	m := make(map[string]json.RawMessage)
+	err = json.Unmarshal(resp, &m)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(m)
+
+	c.JSON(200, resp)
 }
 
 func validateJWT(jwt string) string {
