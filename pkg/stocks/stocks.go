@@ -101,6 +101,7 @@ func (r *Repository) GetStories(c *gin.Context) {
 	fromDate := c.Query("from_date")
 	toDate := c.Query("to_date")
 
+	// Check that dates are provided and default to 1 day span if neither defined in query params
 	if fromDate == "" && toDate == "" {
 		currentTime := time.Now()
 		yesterday := currentTime.Add(-1 * time.Hour * 24)
@@ -111,6 +112,8 @@ func (r *Repository) GetStories(c *gin.Context) {
 			"both of these are blank.")
 		return
 	}
+
+	// Check that date formatting is in the correct format for Finnhub
 	_, err := time.Parse("2006-01-02", fromDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, fmt.Sprintf("Bad 'from date' format: %s", err.Error()))
@@ -120,6 +123,7 @@ func (r *Repository) GetStories(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, fmt.Sprintf("Bad 'to date' format: %s", err.Error()))
 	}
 
+	// Get results from Finnhub
 	res, _, err := r.App.FinnhubClient.CompanyNews(context.Background()).Symbol(symbol).From(fromDate).To(toDate).Execute()
 	//res = res[0:5]
 	if err != nil {
@@ -131,26 +135,43 @@ func (r *Repository) GetStories(c *gin.Context) {
 
 func (r *Repository) GetCandles(c *gin.Context) {
 	symbol := strings.ToUpper(c.Query("symbol"))
+	authorization := c.Request.Header.Get("Authorization")
+	api := c.Query("api")
+	if symbol == "" {
+		c.JSON(http.StatusBadRequest, "No stock symbols in query.")
+		return
+	}
 
 	candleUrl := "https://api.tdameritrade.com/v1/marketdata/" + symbol + "/pricehistory"
+	if api != "" && authorization == "" {
+		candleUrl = candleUrl + "?apikey=" + api
+	} else if api == "" && authorization == "" {
+		c.JSON(http.StatusUnauthorized, "Cannot make request. No authorization and/or API key provided.")
+	}
 
-	// Don't really care to error handle at this point, but will add later
-	auth, _ := c.Cookie("access_token")
+	// TODO add more options for query params
 
 	// build and send request to TD
 	req, err := http.NewRequest("GET", candleUrl, nil)
-	req.Header.Add("Authorization", "Bearer "+auth)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, "Error creating http request.")
+		return
+	} else if authorization != "" {
+		req.Header.Add("Authorization", authorization)
+	}
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
-	fmt.Println(string([]byte(body)))
-	c.JSON(200, body)
+	var result map[string]any
+	_ = json.Unmarshal(body, &result)
+	c.JSON(200, result)
 }
 
 func InitRepo(a *config.AppConfig) {
