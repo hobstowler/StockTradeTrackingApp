@@ -27,14 +27,6 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-type LoginReq struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	Email       string `json:"email"`
-	NewPassword string `json:"newPassword"`
-	API         string `json:"apiKey"`
-}
-
 func Routes(g *gin.Engine) {
 	auth := g.Group("/auth")
 
@@ -51,6 +43,14 @@ func InitRepo(a *config.AppConfig) {
 	Repo = &Repository{
 		App: a,
 	}
+}
+
+type LoginReq struct {
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	NewPassword string `json:"newPassword"`
+	API         string `json:"apiKey"`
 }
 
 func (r *Repository) login(c *gin.Context) {

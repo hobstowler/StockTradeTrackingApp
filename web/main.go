@@ -11,6 +11,7 @@ import (
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"context"
 	"fmt"
+	"github.com/Finnhub-Stock-API/finnhub-go/v2"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"hash/crc32"
@@ -23,11 +24,23 @@ func main() {
 		return
 	}
 
+	finnhubAPI, err := getGCPSecret("finnhub", -1)
+	if err != nil {
+		fmt.Println("Could not access Finnhub secret.")
+		return
+	}
+
+	cfg := finnhub.NewConfiguration()
+	cfg.AddDefaultHeader("X-Finnhub-Token", finnhubAPI)
+	finnhubClient := finnhub.NewAPIClient(cfg).DefaultApi
+
 	app := config.AppConfig{
-		InitDB:   false,
-		DB:       db.GetDB(),
-		ClientId: "469502423353-5oh1cq1u04rqmc2e6p5vbkptebsuauf9.apps.googleusercontent.com",
-		OAuth:    oAuth,
+		InitDB:        false,
+		DB:            db.GetDB(),
+		ClientId:      "469502423353-5oh1cq1u04rqmc2e6p5vbkptebsuauf9.apps.googleusercontent.com",
+		OAuth:         oAuth,
+		FinnhubClient: finnhubClient,
+		FinnhubAPI:    finnhubAPI,
 	}
 	if app.InitDB {
 		db.InitDB(&app)
