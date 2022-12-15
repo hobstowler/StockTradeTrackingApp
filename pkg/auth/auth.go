@@ -22,11 +22,6 @@ type Repository struct {
 	App *config.AppConfig
 }
 
-type Claims struct {
-	Username string `json:"username"`
-	jwt.RegisteredClaims
-}
-
 func Routes(g *gin.Engine) {
 	auth := g.Group("/auth")
 
@@ -54,102 +49,20 @@ type LoginReq struct {
 }
 
 func (r *Repository) login(c *gin.Context) {
-	accessToken, err := c.Cookie("app_access_token")
-	fmt.Println(accessToken)
-	if err == nil {
-		r.loginWithJWT(accessToken, c)
-		return
-	} else {
-		fmt.Println(err)
-	}
-
-	refreshToken, err := c.Cookie("app_refresh_token")
-	if err == nil {
-		r.refreshAndLogInWithJWT(refreshToken, c)
-		return
-	} else {
-		fmt.Println(err)
-	}
-
-	req := LoginReq{}
-	if err := c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+	tokenString, _ := c.Cookie("ugly jwt")
+	if tokenString != "" {
+		r.loginWithJWT(tokenString, c)
 		return
 	}
-	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, "Username and/or password are required.")
-		return
-	}
-	username := strings.ToLower(req.Username)
-
-	// Check password hash
-	if r.checkPassword(username, req.Password) == false {
-		c.JSON(http.StatusBadRequest, "Incorrect password.")
-		return
-	}
-
-	// Access Token
-	timeAdded := 30 * time.Minute
-	expirationTime := time.Now().Add(timeAdded)
-	claims := &Claims{
-		Username: username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SigningString()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	// Refresh Token
-	refreshTime := time.Now().Add(timeAdded * 2 * 24 * 30)
-	refreshClaims := &Claims{
-		Username: username,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(refreshTime),
-		},
-	}
-	refresh := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	refreshTokenString, err := refresh.SigningString()
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-
-	c.SetCookie("app_access_token", tokenString, int(timeAdded.Seconds()), "/", "localhost", true, true)
-	c.SetCookie("app_refresh_token", refreshTokenString, int(timeAdded.Seconds()*2*24*30), "/", "localhost", true, true)
-	c.JSON(http.StatusOK, "Successfully logged in as '"+username+"'.")
 }
 
-func (r *Repository) loginWithJWT(accessString string, c *gin.Context) {
-	fmt.Println(accessString)
-	fmt.Println("Logging with JWT")
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(accessString, claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte("Something"), nil
-	})
+func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
+	tokenClaims, err := r.validateJWT(tokenString)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(err.Error())
 	}
-	if !token.Valid {
-		c.AbortWithError(http.StatusUnauthorized, errors.New("bad token"))
-	}
-
-	username := claims.Username
-	var result string
-	err = r.App.DB.QueryRow(`SELECT * from user where username = $1`, username).Scan(&result)
-	if err != nil {
-		if err.Error() != "sql: no rows in result set" {
-			c.JSON(http.StatusInternalServerError, err.Error())
-			return
-		} else {
-			c.JSON(http.StatusUnauthorized, "User does not exist.")
-		}
-	}
-	c.JSON(http.StatusOK, "Welcome, "+username)
+	sub := tokenClaims.Sub
+	fmt.Println(sub)
 }
 
 func (r *Repository) refreshAndLogInWithJWT(refreshString string, c *gin.Context) {
@@ -157,6 +70,7 @@ func (r *Repository) refreshAndLogInWithJWT(refreshString string, c *gin.Context
 }
 
 func (r *Repository) logout(c *gin.Context) {
+	c.SetCookie("ugly jwt", "", -1, "/", c.Request.URL.Host, false, false)
 	c.JSON(200, "You are logging out")
 }
 
@@ -351,6 +265,46 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	c.JSON(200, resp)
 }
 
-func validateJWT(jwt string) string {
-	return ""
+type CustomClaims struct {
+	Username string `json:"username"`
+	Sub      string `json:"sub"`
+	APIKey   string `json:"api_key"`
+	//AuthToken    string `json:"auth_token"`
+	//RefreshToken string `json:"refreshToken"`
+	jwt.RegisteredClaims
+}
+
+func (r *Repository) GenerateJWT(username string, sub string, api_key string) (string, error) {
+	claims := CustomClaims{
+		username,
+		sub,
+		api_key,
+		jwt.RegisteredClaims{
+			Issuer:    "UglyTradingApp",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	ss, err := token.SignedString([]byte(r.App.OAuth))
+	if err != nil {
+		return "", err
+	}
+	return ss, nil
+}
+
+func (r *Repository) validateJWT(tokenString string) (CustomClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(r.App.OAuth), nil
+	})
+	if err != nil {
+		return CustomClaims{}, err
+	}
+
+	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		return *claims, nil
+	} else {
+		return CustomClaims{}, errors.New("Invalid Token")
+	}
 }

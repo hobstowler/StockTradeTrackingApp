@@ -59,7 +59,10 @@ func main() {
 	stocks.Routes(router)
 	crypto.Routes(router)
 
-	router.Run(":3001")
+	err = router.Run(":3001")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }
 
 func getGCPSecret(secretName string, version int) (string, error) {
