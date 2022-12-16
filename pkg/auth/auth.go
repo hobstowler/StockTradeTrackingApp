@@ -3,12 +3,16 @@ package auth
 import (
 	"UglyTradingApp/pkg/config"
 	"bytes"
+	secretmanager "cloud.google.com/go/secretmanager/apiv1"
+	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
+	"hash/crc32"
 	"io"
 	"math/rand"
 	"net/http"
@@ -294,17 +298,54 @@ func (r *Repository) GenerateJWT(username string, sub string, api_key string) (s
 	return ss, nil
 }
 
-func (r *Repository) validateJWT(tokenString string) (CustomClaims, error) {
+func (r *Repository) validateJWT(tokenString string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(r.App.OAuth), nil
 	})
 	if err != nil {
-		return CustomClaims{}, err
+		return &CustomClaims{}, err
 	}
 
 	if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-		return *claims, nil
+		return claims, nil
 	} else {
-		return CustomClaims{}, errors.New("Invalid Token")
+		return &CustomClaims{}, errors.New("Invalid Token")
 	}
+}
+
+func GetGCPSecret(secretName string, version int) (string, error) {
+	var name string
+	if version == -1 {
+		name = fmt.Sprintf("projects/469502423353/secrets/%s/versions/latest", secretName)
+	} else {
+		name = fmt.Sprintf("projects/469502423353/secrets/%s/versions/%d", secretName, version)
+	}
+
+	// Create the client
+	ctx := context.Background()
+	client, err := secretmanager.NewClient(ctx)
+	if err != nil {
+		return "", fmt.Errorf("failed to create secretmanager client: %v", err)
+	}
+	defer client.Close()
+
+	// Build the request.
+	req := &secretmanagerpb.AccessSecretVersionRequest{
+		Name: name,
+	}
+
+	// Call the API
+	result, err := client.AccessSecretVersion(ctx, req)
+	if err != nil {
+		return "", fmt.Errorf("failed to access secret version :%v", err)
+	}
+
+	// Verify data checksum
+	crc32c := crc32.MakeTable(crc32.Castagnoli)
+	checksum := int64(crc32.Checksum(result.Payload.Data, crc32c))
+	if checksum != *result.Payload.DataCrc32C {
+		return "", fmt.Errorf("data corruption detected")
+	}
+
+	return string(result.Payload.Data), nil
 }
