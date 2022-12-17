@@ -26,13 +26,19 @@ func main() {
 		return
 	}
 
+	database, err := db.ConnectUnixSocket()
+	if err != nil {
+		fmt.Println("Could not access database: %s", err)
+		return
+	}
+
 	cfg := finnhub.NewConfiguration()
 	cfg.AddDefaultHeader("X-Finnhub-Token", finnhubAPI)
 	finnhubClient := finnhub.NewAPIClient(cfg).DefaultApi
 
 	app := config.AppConfig{
 		InitDB:        false,
-		DB:            db.GetDB("", false),
+		DB:            database,
 		ClientId:      "469502423353-5oh1cq1u04rqmc2e6p5vbkptebsuauf9.apps.googleusercontent.com",
 		OAuth:         oAuth,
 		FinnhubClient: finnhubClient,

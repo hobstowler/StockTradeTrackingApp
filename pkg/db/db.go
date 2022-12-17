@@ -3,10 +3,15 @@ package db
 import (
 	"UglyTradingApp/pkg/auth"
 	"UglyTradingApp/pkg/config"
+	"cloud.google.com/go/cloudsqlconn"
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/stdlib"
 	_ "modernc.org/sqlite"
+	"net"
 	"os"
 )
 
@@ -33,7 +38,7 @@ func InitDB(a *config.AppConfig) {
 
 func GetDB(path string, local bool) *sql.DB {
 	if !local {
-		db, err := connectUnixSocket()
+		db, err := ConnectUnixSocket()
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -49,18 +54,18 @@ func GetDB(path string, local bool) *sql.DB {
 
 // connectUnixSocket initializes a Unix socket connection pool for
 // a Cloud SQL instance of Postgres.
-func connectUnixSocket() (*sql.DB, error) {
+func ConnectUnixSocket() (*sql.DB, error) {
 	dbUser, err := auth.GetGCPSecret("db_user", -1)
 	if err != nil {
 		return &sql.DB{}, errors.New("Could not access db_user secret.")
 	}
 
-	dbPwd, err := auth.GetGCPSecret("db_pwd", -1)
+	dbPwd, err := auth.GetGCPSecret("postgres", -1)
 	if err != nil {
 		return &sql.DB{}, errors.New("Could not access db_pwd secret.")
 	}
 
-	unixSocketPath, err := auth.GetGCPSecret("unix_socket_path", -1)
+	instanceConnectionName, err := auth.GetGCPSecret("unix_socket_path", -1)
 	if err != nil {
 		return &sql.DB{}, errors.New("Could not access unix_socket_path secret.")
 	}
@@ -70,14 +75,25 @@ func connectUnixSocket() (*sql.DB, error) {
 		return &sql.DB{}, errors.New("Could not access db_name secret.")
 	}
 
-	dbURI := fmt.Sprintf("user=%s password=%s database=%s host=%s",
-		dbUser, dbPwd, dbName, "/cloudsql/"+unixSocketPath)
-
-	// dbPool is the pool of database connections.
+	dsn := fmt.Sprintf("user=%s password=%s database=%s", dbUser, dbPwd, dbName)
+	pgxconfig, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		return nil, err
+	}
+	var opts []cloudsqlconn.Option
+	d, err := cloudsqlconn.NewDialer(context.Background(), opts...)
+	if err != nil {
+		return nil, err
+	}
+	// Use the Cloud SQL connector to handle connecting to the instance.
+	// This approach does *NOT* require the Cloud SQL proxy.
+	pgxconfig.DialFunc = func(ctx context.Context, network, instance string) (net.Conn, error) {
+		return d.Dial(ctx, instanceConnectionName)
+	}
+	dbURI := stdlib.RegisterConnConfig(pgxconfig)
 	dbPool, err := sql.Open("pgx", dbURI)
 	if err != nil {
 		return nil, fmt.Errorf("sql.Open: %v", err)
 	}
-
 	return dbPool, nil
 }

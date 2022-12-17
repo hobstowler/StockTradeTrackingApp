@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
-	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/idtoken"
 	"hash/crc32"
 	"io"
 	"math/rand"
@@ -29,7 +29,7 @@ type Repository struct {
 func Routes(g *gin.Engine) {
 	auth := g.Group("/auth")
 
-	auth.POST("/login", Repo.login)
+	auth.GET("/login", Repo.login)
 	auth.POST("/logout", Repo.logout)
 	auth.POST("/register", Repo.register)
 	auth.PUT("/change_password", Repo.changePassword)
@@ -58,6 +58,8 @@ func (r *Repository) login(c *gin.Context) {
 		r.loginWithJWT(tokenString, c)
 		return
 	}
+	//c.Request.Method = http.MethodGet
+	c.Redirect(http.StatusFound, "/auth/oauth")
 }
 
 func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
@@ -66,6 +68,9 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 		fmt.Println(err.Error())
 	}
 	sub := tokenClaims.Sub
+
+	var result string
+	r.App.DB.QueryRow(`SELECT first_name FROM 'user' where sub=$1`, sub).Scan(&result)
 	fmt.Println(sub)
 }
 
@@ -79,108 +84,29 @@ func (r *Repository) logout(c *gin.Context) {
 }
 
 func (r *Repository) register(c *gin.Context) {
-	req := LoginReq{}
-	if err := c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
 
-	// Check for required fields
-	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, "Username and/or password are required.")
-		return
-	}
-
-	username := strings.ToLower(req.Username)
-	var result string
-	err := r.App.DB.QueryRow(`SELECT username FROM user where username = $1`, username).Scan(&result)
-	if err != nil && err.Error() != "sql: no rows in result set" {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-	if result != "" {
-		c.JSON(http.StatusBadRequest, "That username is taken.")
-		return
-	}
-
-	hash, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	_, err = r.App.DB.Exec(
-		`INSERT INTO user (username, password, email, api_key) VALUES ($1, $2, $3, $4)`,
-		username, hash, req.Email, req.API)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-	fmt.Println("okee doke")
-	c.JSON(http.StatusCreated, "Success registering as '"+username+"'.")
 }
 
 func (r *Repository) changePassword(c *gin.Context) {
-	req := LoginReq{}
-	if err := c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
-	if req.Username == "" || req.Password == "" {
-		c.JSON(http.StatusBadRequest, "Username and/or password are required.")
-		return
-	}
 
-	username := strings.ToLower(req.Username)
-	// Check password hash
-	if r.checkPassword(username, req.Password) == false {
-		c.JSON(http.StatusBadRequest, "Incorrect password.")
-		return
-	}
-
-	// Change the password and set the HTTP response
-	hash, _ := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
-	_, err := r.App.DB.Exec(`UPDATE user set password = $1 where username = $2`, hash, username)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
-		return
-	}
-	c.JSON(http.StatusOK, "Password successfully changed.")
 }
 
-func (r *Repository) checkPassword(u string, p string) bool {
-	var result string
-	err := r.App.DB.QueryRow(`SELECT password FROM user where username = $1`, u).Scan(&result)
-	if err != nil {
-		fmt.Println(err.Error())
-		return false
-	}
-	err = bcrypt.CompareHashAndPassword([]byte(result), []byte(p))
-	if err != nil {
-		fmt.Println("maybe? " + err.Error())
-		return false
-	}
-	return true
+func (r *Repository) checkPassword(u string, p string) {
+
 }
 
 func (r *Repository) getAPIKey(c *gin.Context) {
-	req := LoginReq{}
-	if err := c.BindJSON(&req); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
-		return
-	}
 
-	// Check password hash
-	if r.checkPassword(req.Username, req.Password) == false {
-		c.JSON(http.StatusBadRequest, "Incorrect password.")
-		return
-	}
 }
 
 // Generate a state variable
 func createStateVariable() string {
-	state := ""
+	var state strings.Builder
+	rand.Seed(time.Now().Unix())
 	for i := 0; i < 10; i++ {
-		randChar := rand.Intn(26) + 97
-		randNum := rand.Intn(10)
-		state = fmt.Sprintf(state, randChar, randNum)
+		state.WriteString(string(rune(rand.Intn(26)+97)) + string(rune(rand.Intn(10)+48)))
 	}
-	return state
+	return state.String()
 }
 
 func (r *Repository) oAuth(c *gin.Context) {
@@ -190,11 +116,11 @@ func (r *Repository) oAuth(c *gin.Context) {
 	var state string
 	for !valid {
 		state = createStateVariable()
-		_, err := r.App.DB.Exec(`INSERT INTO state SET state = $1`, state)
+		_, err := r.App.DB.Exec(`INSERT INTO state (state) VALUES ($1)`, state)
 		if err == nil {
 			valid = true // should attempt another state variable
 		}
-		attempts--
+		attempts = attempts - 1
 		if attempts == 0 {
 			panic(err)
 		}
@@ -204,7 +130,7 @@ func (r *Repository) oAuth(c *gin.Context) {
 	var authBuilder strings.Builder
 	authBuilder.WriteString("https://accounts.google.com/o/oauth2/v2/auth")
 	authBuilder.WriteString(fmt.Sprintf("?response_type=code&client_id=%s", r.App.ClientId))
-	authBuilder.WriteString(fmt.Sprintf("&redirect_uri=%s", c.Request.URL.Host))
+	authBuilder.WriteString(fmt.Sprintf("&redirect_uri=http://%s%s", c.Request.Host, "/auth/return_auth"))
 	authBuilder.WriteString(fmt.Sprintf("&scope=profile&state=%s", state))
 	authUrl := authBuilder.String()
 
@@ -219,26 +145,37 @@ type token struct {
 	GrantType    string `json:"grant_type"`
 }
 
+type googleToken struct {
+	AccessToken string `json:"access_token"`
+	IdToken     string `json:"id_token"`
+	ExpiresIn   int    `json:"expires_in"`
+	Scope       string `json:"scope"`
+	TokenType   string `json:"token_type"`
+}
+
 func (r *Repository) returnAuth(c *gin.Context) {
 	state := c.Query("state")
 	code := c.Query("code")
 
-	var result string
-	err := r.App.DB.QueryRow(`SELECT state FROM state where state = $1`, state).Scan(&result)
+	var row string
+	err := r.App.DB.QueryRow(`SELECT state FROM state where state = $1`, state).Scan(&row)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "Error retrieving state variable")
 		return
 	}
-	if result != state {
+	if row != state {
 		c.JSON(http.StatusInternalServerError, "Bad state variable in request.")
 		return
 	}
+
+	// Clean up state variable
+	_, _ = r.App.DB.Exec(`DELETE FROM state WHERE state = $1`, state)
 
 	tokenJson := &token{
 		Code:         code,
 		ClientId:     r.App.ClientId,
 		ClientSecret: r.App.OAuth,
-		RedirectUri:  c.Request.URL.Host + "/auth/return_auth",
+		RedirectUri:  "http://" + c.Request.Host + "/auth/return_auth",
 		GrantType:    "authorization_code",
 	}
 	tokenJSONPayload, _ := json.Marshal(tokenJson)
@@ -252,37 +189,96 @@ func (r *Repository) returnAuth(c *gin.Context) {
 
 	// Make request to get token from Google
 	res, err := http.DefaultClient.Do(req)
-	if res.StatusCode != http.StatusOK {
-		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error in token response: %s", err))
-		return
-	}
 	defer res.Body.Close()
 
-	resp, err := io.ReadAll(res.Body)
-	m := make(map[string]json.RawMessage)
-	err = json.Unmarshal(resp, &m)
+	body, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		var result map[string]any
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error in token response: %d %s", res.StatusCode, result))
+		return
+	}
+
+	var result googleToken
+	_ = json.Unmarshal(body, &result)
+	payload, err := idtoken.Validate(context.Background(), result.IdToken, r.App.ClientId)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(m)
+	fmt.Println("PAYLOAD")
+	fmt.Println(payload)
 
-	c.JSON(200, resp)
+	firstName, lastName, err := getNames("Bearer " + result.AccessToken)
+
+	c.JSON(200, firstName+" "+lastName)
+}
+
+type GoogleNames struct {
+	Etag         string     `json:"etag"`
+	Names        []NameDict `json:"names"`
+	ResourceName string     `json:"resourceName"`
+}
+
+type NameDict struct {
+	DisplayName          string       `json:"displayName"`
+	DisplayNameLastFirst string       `json:"displayNameLastFirst"`
+	FamilyName           string       `json:"familyName"`
+	GivenName            string       `json:"givenName"`
+	Metadata             NameMetadata `json:"metadata"`
+	UnstructuredName     string       `json:"unstructuredName"`
+}
+
+type NameMetadata struct {
+	Primary       bool           `json:"primary"`
+	Source        map[string]any `json:"source"`
+	SourcePrimary bool           `json:"sourcePrimary"`
+}
+
+func getNames(authorization string) (string, string, error) {
+	nameUrl := "https://people.googleapis.com/v1/people/me?personFields=names"
+	req, err := http.NewRequest(http.MethodGet, nameUrl, nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Authorization", authorization)
+	res, err := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		var result map[string]any
+		_ = json.Unmarshal(body, &result)
+		return "", "", errors.New(fmt.Sprintf("Error requesting names from google: %d %s", res.StatusCode, result))
+	}
+	var result GoogleNames
+	_ = json.Unmarshal(body, &result)
+
+	names := result.Names
+	for _, name := range names {
+		if name.Metadata.Primary == true {
+			return name.GivenName, name.FamilyName, nil
+		}
+	}
+
+	return "", "", errors.New("No primary name found")
 }
 
 type CustomClaims struct {
-	Username string `json:"username"`
-	Sub      string `json:"sub"`
-	APIKey   string `json:"api_key"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Sub       string `json:"sub"`
+	//APIKey   string `json:"api_key"`
 	//AuthToken    string `json:"auth_token"`
 	//RefreshToken string `json:"refreshToken"`
 	jwt.RegisteredClaims
 }
 
-func (r *Repository) GenerateJWT(username string, sub string, api_key string) (string, error) {
+func (r *Repository) GenerateJWT(firstName string, lastName string, sub string) (string, error) {
 	claims := CustomClaims{
-		username,
+		firstName,
+		lastName,
 		sub,
-		api_key,
+		//api_key,
 		jwt.RegisteredClaims{
 			Issuer:    "UglyTradingApp",
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
