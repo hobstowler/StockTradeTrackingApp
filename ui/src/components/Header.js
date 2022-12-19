@@ -14,7 +14,7 @@ export default function Header({isLoggedIn, setLogIn, activePage, account, balan
                 <div>
                     <div className='headTitle'>
                         <h1>The Ugly Trading App</h1>
-                        <h2>Powered by TD Ameritrade</h2>
+                        <h2>Powered by Stunning Good Looks</h2>
                     </div>
                     <Navigation activePage={activePage} />
                 </div>

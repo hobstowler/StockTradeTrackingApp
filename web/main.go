@@ -51,6 +51,8 @@ func main() {
 	router := gin.Default()
 	router.Use(static.Serve("/", static.LocalFile("./ui/build", true)))
 
+	router.GET("/loggedOut", loggedOut)
+
 	auth.InitRepo(&app)
 	account.InitRepo(&app)
 	stocks.InitRepo(&app)
@@ -65,4 +67,8 @@ func main() {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
+}
+
+func loggedOut(c *gin.Context) {
+	c.JSON(200, "You are now logged out")
 }

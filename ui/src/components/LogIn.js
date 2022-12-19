@@ -148,15 +148,13 @@ export default function LogIn({isLoggedIn, setLogIn}) {
         .then(response => {
             if (response.status == 200) {
                 setLogIn(false)
-                clearCookie('app_access_token')
                 /*clearCookie('access_token')
                 clearCookie('access_token_expiry')
                 clearCookie('refresh_token')
                 clearCookie('refresh_token_expiry')*/
                 setUsername('Username')
                 setPassword('Password')
-                setApiKey('API Key')
-                navigate('/')
+                navigate('/loggedOut')
             }
         })
     }

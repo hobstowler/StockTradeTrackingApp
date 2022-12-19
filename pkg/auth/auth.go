@@ -80,7 +80,7 @@ func (r *Repository) refreshAndLogInWithJWT(refreshString string, c *gin.Context
 
 func (r *Repository) logout(c *gin.Context) {
 	c.SetCookie("ugly jwt", "", -1, "/", c.Request.URL.Host, false, false)
-	c.JSON(200, "You are logging out")
+	c.JSON(200, "You are logged out.")
 }
 
 func (r *Repository) register(c *gin.Context) {
@@ -157,6 +157,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	state := c.Query("state")
 	code := c.Query("code")
 
+	// Check that state variable is valid from DB
 	var row string
 	err := r.App.DB.QueryRow(`SELECT state FROM state where state = $1`, state).Scan(&row)
 	if err != nil {
@@ -171,6 +172,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	// Clean up state variable
 	_, _ = r.App.DB.Exec(`DELETE FROM state WHERE state = $1`, state)
 
+	// Make http request for Google token
 	tokenJson := &token{
 		Code:         code,
 		ClientId:     r.App.ClientId,
@@ -187,7 +189,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 		return
 	}
 
-	// Make request to get token from Google
+	// Send request to get token from Google
 	res, err := http.DefaultClient.Do(req)
 	defer res.Body.Close()
 
@@ -206,7 +208,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 		panic(err)
 	}
 	fmt.Println("PAYLOAD")
-	fmt.Println(payload)
+	fmt.Println(payload.Claims["sub"])
 
 	firstName, lastName, err := getNames("Bearer " + result.AccessToken)
 
