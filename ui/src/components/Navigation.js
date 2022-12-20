@@ -4,9 +4,9 @@ export default function Navigation({activePage}) {
     const pages = [
         {url: '/', label: 'home'},
         {url: '/stocks', label: 'stocks'},
-        {url: '/options', label: 'options'},
-        {url: '/crypto', label: 'crypto'},
-        {url: '/watch', label: 'watch'}/*,
+        {url: '/', label: 'options'},
+        {url: '/', label: 'crypto'},
+        {url: '/', label: 'watch'}/*,
         {url: '/account', label: 'account'}*/
     ]
 

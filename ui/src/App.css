@@ -439,3 +439,12 @@ form input {
   vertical-align: center;
   color: beige;
 }
+
+.logIn a {
+  display: inline-block;
+}
+
+.logIn svg {
+  vertical-align: top;
+  margin-top: 1px;
+}

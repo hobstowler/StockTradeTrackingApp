@@ -43,6 +43,7 @@ func main() {
 		OAuth:         oAuth,
 		FinnhubClient: finnhubClient,
 		FinnhubAPI:    finnhubAPI,
+		TdApi:         "WKARA9UYSUE8NO3FQMXCSGE5HSNG5RML",
 	}
 	if app.InitDB {
 		db.InitDB(&app)

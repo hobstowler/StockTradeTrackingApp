@@ -6,6 +6,7 @@ import (
 	secretmanager "cloud.google.com/go/secretmanager/apiv1"
 	"cloud.google.com/go/secretmanager/apiv1/secretmanagerpb"
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,6 +17,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -31,11 +33,11 @@ func Routes(g *gin.Engine) {
 
 	auth.GET("/login", Repo.login)
 	auth.POST("/logout", Repo.logout)
-	auth.POST("/register", Repo.register)
-	auth.PUT("/change_password", Repo.changePassword)
-	auth.GET("/get_api", Repo.getAPIKey)
 	auth.GET("/oauth", Repo.oAuth)
 	auth.GET("/return_auth", Repo.returnAuth)
+	auth.GET("/td_auth", Repo.tdAuth)
+	auth.GET("/td_return_auth", Repo.tdReturnAuth)
+	auth.GET("/td_refresh_auth", Repo.tdRefresh)
 }
 
 func InitRepo(a *config.AppConfig) {
@@ -44,16 +46,13 @@ func InitRepo(a *config.AppConfig) {
 	}
 }
 
-type LoginReq struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	Email       string `json:"email"`
-	NewPassword string `json:"newPassword"`
-	API         string `json:"apiKey"`
+type LoginRes struct {
+	Username string `json:"username"`
+	LoggedIn bool   `json:"loggedIn"`
 }
 
 func (r *Repository) login(c *gin.Context) {
-	tokenString, _ := c.Cookie("ugly jwt")
+	tokenString, _ := c.Cookie("ugly_jwt")
 	if tokenString != "" {
 		r.loginWithJWT(tokenString, c)
 		return
@@ -70,33 +69,94 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 	sub := tokenClaims.Sub
 
 	var result string
-	r.App.DB.QueryRow(`SELECT first_name FROM 'user' where sub=$1`, sub).Scan(&result)
-	fmt.Println(sub)
-}
+	err = r.App.DB.QueryRow(`SELECT first_name FROM "user" where sub=$1`, sub).Scan(&result)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.JSON(http.StatusNotFound, "No registered user found.")
+			return
+		} else {
+			panic(err)
+		}
+	}
 
-func (r *Repository) refreshAndLogInWithJWT(refreshString string, c *gin.Context) {
-
+	loginResp := LoginRes{
+		Username: result,
+		LoggedIn: true,
+	}
+	c.JSON(200, loginResp)
 }
 
 func (r *Repository) logout(c *gin.Context) {
-	c.SetCookie("ugly jwt", "", -1, "/", c.Request.URL.Host, false, false)
+	c.SetCookie("ugly_jwt", "", -1, "/", c.Request.URL.Host, false, false)
 	c.JSON(200, "You are logged out.")
 }
 
-func (r *Repository) register(c *gin.Context) {
-
+func (r *Repository) tdAuth(c *gin.Context) {
+	tdUrlBuilder := strings.Builder{}
+	tdUrlBuilder.WriteString("https://auth.tdameritrade.com/auth")
+	tdUrlBuilder.WriteString("?response_type=code&redirect_uri=")
+	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "http://"+c.Request.Host))
+	tdUrlBuilder.WriteString(fmt.Sprintf("&client_id=%s@AMER.OAUTHAP", r.App.TdApi))
+	tdUrl := tdUrlBuilder.String()
+	c.Redirect(http.StatusFound, tdUrl)
 }
 
-func (r *Repository) changePassword(c *gin.Context) {
-
+type tdTokenResp struct {
+	AccessToken           string `json:"access_token"`
+	RefreshToken          string `json:"refresh_token"`
+	TokenType             string `json:"token_type"`
+	ExpiresIn             int    `json:"expires_in"`
+	Scope                 string `json:"scope"`
+	RefreshTokenExpiresIn int    `json:"refresh_token_expires_in"`
 }
 
-func (r *Repository) checkPassword(u string, p string) {
+func (r *Repository) tdReturnAuth(c *gin.Context) {
+	code := c.Query("code")
+	apiKey := r.App.TdApi
+	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
 
+	// Encode body data
+	data := url.Values{}
+	data.Set("grant_type", "authorization_code")
+	data.Set("access_type", "offline")
+	data.Set("code", code)
+	data.Set("client_id", apiKey)
+	data.Set("redirect_uri", "http://"+c.Request.Host+"/auth/td_return_auth")
+	encodedData := data.Encode()
+
+	// Create request and set headers
+	req, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(encodedData))
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Make token request to TD Ameritrade
+	res, err := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+
+	// TODO handle a bad response here
+	// Read in body from TD
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		panic(err)
+	}
+
+	var result tdTokenResp
+	_ = json.Unmarshal(body, &result)
+
+	// Set cookies and redirect back to main page
+	c.SetCookie("td_auth", result.AccessToken, result.ExpiresIn, "/", c.Request.URL.Host, false, false)
+	c.SetCookie("td_refresh", result.RefreshToken, result.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, false)
+	c.Redirect(http.StatusFound, "/")
 }
 
-func (r *Repository) getAPIKey(c *gin.Context) {
-
+func (r *Repository) tdRefresh(c *gin.Context) {
+	refresh_token, _ := c.Cookie("td_refresh")
+	if refresh_token != "" {
+		c.JSON(http.StatusBadRequest, "No refresh token")
+		return
+	}
 }
 
 // Generate a state variable
@@ -207,12 +267,36 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("PAYLOAD")
-	fmt.Println(payload.Claims["sub"])
+	sub := fmt.Sprint(payload.Claims["sub"])
 
 	firstName, lastName, err := getNames("Bearer " + result.AccessToken)
 
-	c.JSON(200, firstName+" "+lastName)
+	jwtString, err := r.GenerateJWT(firstName, lastName, sub)
+	if err != nil {
+		panic(err)
+	}
+
+	c.SetCookie("ugly_jwt", jwtString, 60*60*24*7, "/", c.Request.URL.Host, false, false)
+	err = r.registerNewUser(firstName, lastName, sub)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	c.Redirect(http.StatusFound, "/")
+}
+
+func (r *Repository) registerNewUser(firstName string, lastName string, sub string) error {
+	var result string
+	err := r.App.DB.QueryRow(`SELECT first_name from "user" where sub=$1`, sub).Scan(&result)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	} else if err == sql.ErrNoRows {
+		_, err = r.App.DB.Exec(`INSERT INTO "user" (first_name, last_name, sub) VALUES ($1, $2, $3)`, firstName, lastName, sub)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type GoogleNames struct {
@@ -288,7 +372,8 @@ func (r *Repository) GenerateJWT(firstName string, lastName string, sub string) 
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	fmt.Println(r.App.OAuth)
 	ss, err := token.SignedString([]byte(r.App.OAuth))
 	if err != nil {
 		return "", err

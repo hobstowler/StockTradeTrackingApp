@@ -12,4 +12,5 @@ type AppConfig struct {
 	OAuth         string
 	FinnhubClient *finnhub.DefaultApiService
 	FinnhubAPI    string
+	TdApi         string
 }
