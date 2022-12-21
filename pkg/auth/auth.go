@@ -145,9 +145,25 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 	var result tdTokenResp
 	_ = json.Unmarshal(body, &result)
 
+	tdClaims := CustomClaims{
+		FirstName:          "",
+		LastName:           "",
+		Sub:                "",
+		AccessToken:        result.AccessToken,
+		AccessTokenExpiry:  result.ExpiresIn,
+		RefreshToken:       result.RefreshToken,
+		RefreshTokenExpiry: result.RefreshTokenExpiresIn,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    "UglyTradingApp",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
+		},
+	}
+
+	jwtString, err := GenerateJWT(tdClaims, r.App.OAuth)
+
 	// Set cookies and redirect back to main page
-	c.SetCookie("td_auth", result.AccessToken, result.ExpiresIn, "/", c.Request.URL.Host, false, false)
-	c.SetCookie("td_refresh", result.RefreshToken, result.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, false)
+	c.SetCookie("jwt_td", jwtString, result.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, true)
 	c.Redirect(http.StatusFound, "/")
 }
 
@@ -213,6 +229,17 @@ type googleToken struct {
 	TokenType   string `json:"token_type"`
 }
 
+type CustomClaims struct {
+	FirstName          string `json:"first_name"`
+	LastName           string `json:"last_name"`
+	Sub                string `json:"sub"`
+	AccessToken        string `json:"access_token"`
+	AccessTokenExpiry  int    `json:"access_token_expiry"`
+	RefreshToken       string `json:"refresh_token"`
+	RefreshTokenExpiry int    `json:"refresh_token_expiry"`
+	jwt.RegisteredClaims
+}
+
 func (r *Repository) returnAuth(c *gin.Context) {
 	state := c.Query("state")
 	code := c.Query("code")
@@ -271,7 +298,22 @@ func (r *Repository) returnAuth(c *gin.Context) {
 
 	firstName, lastName, err := getNames("Bearer " + result.AccessToken)
 
-	jwtString, err := r.GenerateJWT(firstName, lastName, sub)
+	claims := CustomClaims{
+		firstName,
+		lastName,
+		sub,
+		"",
+		0,
+		"",
+		0,
+		jwt.RegisteredClaims{
+			Issuer:    "UglyTradingApp",
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
+		},
+	}
+
+	jwtString, err := GenerateJWT(claims, r.App.OAuth)
 	if err != nil {
 		panic(err)
 	}
@@ -349,32 +391,9 @@ func getNames(authorization string) (string, string, error) {
 	return "", "", errors.New("No primary name found")
 }
 
-type CustomClaims struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Sub       string `json:"sub"`
-	//APIKey   string `json:"api_key"`
-	//AuthToken    string `json:"auth_token"`
-	//RefreshToken string `json:"refreshToken"`
-	jwt.RegisteredClaims
-}
-
-func (r *Repository) GenerateJWT(firstName string, lastName string, sub string) (string, error) {
-	claims := CustomClaims{
-		firstName,
-		lastName,
-		sub,
-		//api_key,
-		jwt.RegisteredClaims{
-			Issuer:    "UglyTradingApp",
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24 * 7)),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	fmt.Println(r.App.OAuth)
-	ss, err := token.SignedString([]byte(r.App.OAuth))
+func GenerateJWT(customClaim CustomClaims, secret string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customClaim)
+	ss, err := token.SignedString([]byte(secret))
 	if err != nil {
 		return "", err
 	}
