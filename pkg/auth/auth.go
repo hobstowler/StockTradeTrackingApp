@@ -51,6 +51,7 @@ type LoginRes struct {
 	LoggedIn bool   `json:"loggedIn"`
 }
 
+// Logs a user in either by redirecting them to the OAuth service or by using a valid JWT passed in the request.
 func (r *Repository) login(c *gin.Context) {
 	tokenString, _ := c.Cookie("ugly_jwt")
 	if tokenString != "" {
@@ -61,8 +62,9 @@ func (r *Repository) login(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/auth/oauth")
 }
 
+// Logs a user in with their valid JWT.
 func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
-	tokenClaims, err := r.validateJWT(tokenString)
+	tokenClaims, err := ValidateJWT(tokenString, r.App.OAuth)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -86,6 +88,7 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 	c.JSON(200, loginResp)
 }
 
+// Clears out the ugly_jwt cookie, thus "logging" the user out of the application
 func (r *Repository) logout(c *gin.Context) {
 	c.SetCookie("ugly_jwt", "", -1, "/", c.Request.URL.Host, false, false)
 	c.JSON(200, "You are logged out.")
@@ -173,6 +176,8 @@ func (r *Repository) tdRefresh(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, "No refresh token")
 		return
 	}
+
+	//TODO
 }
 
 // Generate a state variable
@@ -185,6 +190,7 @@ func createStateVariable() string {
 	return state.String()
 }
 
+// Builds a redirect URL and sends the user's browser page to Google's OAuth 2.0 service
 func (r *Repository) oAuth(c *gin.Context) {
 	// Generate state and write to DB
 	valid := false
@@ -240,6 +246,9 @@ type CustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+// Return authorization from Google OAuth 2.0
+// Checks that state variable returned is expected and then requests a token from Google from which the user's name and
+// sub can be determined.
 func (r *Repository) returnAuth(c *gin.Context) {
 	state := c.Query("state")
 	code := c.Query("code")
@@ -260,6 +269,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	_, _ = r.App.DB.Exec(`DELETE FROM state WHERE state = $1`, state)
 
 	// Make http request for Google token
+	// TODO move this to a separate function
 	tokenJson := &token{
 		Code:         code,
 		ClientId:     r.App.ClientId,
@@ -327,6 +337,8 @@ func (r *Repository) returnAuth(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
+// Called on /auth/return_auth to register a new user to the Ugly Trading App. Queries DB to determine if user already
+// exists.
 func (r *Repository) registerNewUser(firstName string, lastName string, sub string) error {
 	var result string
 	err := r.App.DB.QueryRow(`SELECT first_name from "user" where sub=$1`, sub).Scan(&result)
@@ -362,6 +374,8 @@ type NameMetadata struct {
 	SourcePrimary bool           `json:"sourcePrimary"`
 }
 
+// Requests a user's name and other information from Google's People API using the authorization token in the return
+// auth endpoint.
 func getNames(authorization string) (string, string, error) {
 	nameUrl := "https://people.googleapis.com/v1/people/me?personFields=names"
 	req, err := http.NewRequest(http.MethodGet, nameUrl, nil)
@@ -391,6 +405,7 @@ func getNames(authorization string) (string, string, error) {
 	return "", "", errors.New("No primary name found")
 }
 
+// Generates a JWT using the CustomClaims and secret
 func GenerateJWT(customClaim CustomClaims, secret string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, customClaim)
 	ss, err := token.SignedString([]byte(secret))
@@ -400,9 +415,10 @@ func GenerateJWT(customClaim CustomClaims, secret string) (string, error) {
 	return ss, nil
 }
 
-func (r *Repository) validateJWT(tokenString string) (*CustomClaims, error) {
+// Validates a given JWT string using a provided secret.
+func ValidateJWT(tokenString string, secret string) (*CustomClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(r.App.OAuth), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return &CustomClaims{}, err
@@ -415,6 +431,7 @@ func (r *Repository) validateJWT(tokenString string) (*CustomClaims, error) {
 	}
 }
 
+// Gets a secret of a certain string from GCP's Secret Manager
 func GetGCPSecret(secretName string, version int) (string, error) {
 	var name string
 	if version == -1 {
