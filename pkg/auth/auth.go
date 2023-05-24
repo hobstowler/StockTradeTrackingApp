@@ -38,6 +38,7 @@ func Routes(g *gin.Engine) {
 	auth.GET("/td_auth", Repo.tdAuth)
 	auth.GET("/td_return_auth", Repo.tdReturnAuth)
 	auth.GET("/td_refresh_auth", Repo.tdRefresh)
+	auth.GET("/verify_td", Repo.verifyTD)
 }
 
 func InitRepo(a *config.AppConfig) {
@@ -49,6 +50,12 @@ func InitRepo(a *config.AppConfig) {
 type LoginRes struct {
 	Username string `json:"username"`
 	LoggedIn bool   `json:"loggedIn"`
+	Error    string `json:"error"`
+}
+
+type tdVerifyRes struct {
+	Valid bool   `json:"valid"`
+	Error string `json:"error"`
 }
 
 // Logs a user in either by redirecting them to the OAuth service or by using a valid JWT passed in the request.
@@ -70,8 +77,11 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 	}
 	sub := tokenClaims.Sub
 
-	var result string
-	err = r.App.DB.QueryRow(`SELECT first_name FROM "user" where sub=$1`, sub).Scan(&result)
+	var (
+		f_name string
+		l_name string
+	)
+	err = r.App.DB.QueryRow(`SELECT first_name, last_name FROM trade.users where sub=?`, sub).Scan(&f_name, &l_name)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, "No registered user found.")
@@ -82,7 +92,7 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 	}
 
 	loginResp := LoginRes{
-		Username: result,
+		Username: fmt.Sprintf("%s %s", f_name, l_name),
 		LoggedIn: true,
 	}
 	c.JSON(200, loginResp)
@@ -114,6 +124,7 @@ type tdTokenResp struct {
 }
 
 func (r *Repository) tdReturnAuth(c *gin.Context) {
+	fmt.Println("returning!")
 	code := c.Query("code")
 	apiKey := r.App.TdApi
 	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
@@ -170,6 +181,27 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
+func (r *Repository) verifyTD(c *gin.Context) {
+	tokenString, _ := c.Cookie("jwt_td")
+	resp := tdVerifyRes{
+		Valid: false,
+		Error: "",
+	}
+
+	tokenClaims, err := ValidateJWT(tokenString, r.App.OAuth)
+	if err != nil {
+		resp.Error = err.Error()
+		c.JSON(http.StatusBadRequest, resp)
+		return
+	}
+
+	if tokenClaims.ExpiresAt.After(time.Now()) {
+		resp.Valid = true
+	}
+	c.JSON(http.StatusOK, resp)
+	return
+}
+
 func (r *Repository) tdRefresh(c *gin.Context) {
 	refresh_token, _ := c.Cookie("td_refresh")
 	if refresh_token != "" {
@@ -198,7 +230,7 @@ func (r *Repository) oAuth(c *gin.Context) {
 	var state string
 	for !valid {
 		state = createStateVariable()
-		_, err := r.App.DB.Exec(`INSERT INTO state (state) VALUES ($1)`, state)
+		_, err := r.App.DB.Exec(`INSERT INTO trade.state (state) VALUES (?)`, state)
 		if err == nil {
 			valid = true // should attempt another state variable
 		}
@@ -252,21 +284,29 @@ type CustomClaims struct {
 func (r *Repository) returnAuth(c *gin.Context) {
 	state := c.Query("state")
 	code := c.Query("code")
+	var (
+		dbState string
+		ts      time.Time
+	)
 
 	// Check that state variable is valid from DB
-	var row string
-	err := r.App.DB.QueryRow(`SELECT state FROM state where state = $1`, state).Scan(&row)
+	err := r.App.DB.QueryRow(`SELECT state, ts FROM trade.state where state=?`, state).Scan(&dbState, &ts)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, "Error retrieving state variable")
 		return
 	}
-	if row != state {
-		c.JSON(http.StatusInternalServerError, "Bad state variable in request.")
+	if dbState != state {
+		c.JSON(http.StatusBadRequest, "Invalid state variable")
+		return
+	}
+	expiry := ts.Add(10 * time.Minute)
+	if !expiry.Before(time.Now()) {
+		c.JSON(http.StatusBadRequest, "Time limit exceeded")
 		return
 	}
 
 	// Clean up state variable
-	_, _ = r.App.DB.Exec(`DELETE FROM state WHERE state = $1`, state)
+	_, _ = r.App.DB.Exec(`DELETE FROM trade.state WHERE state = ?`, state)
 
 	// Make http request for Google token
 	// TODO move this to a separate function
@@ -341,11 +381,11 @@ func (r *Repository) returnAuth(c *gin.Context) {
 // exists.
 func (r *Repository) registerNewUser(firstName string, lastName string, sub string) error {
 	var result string
-	err := r.App.DB.QueryRow(`SELECT first_name from "user" where sub=$1`, sub).Scan(&result)
+	err := r.App.DB.QueryRow(`SELECT sub from trade.users where sub=?`, sub).Scan(&result)
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	} else if err == sql.ErrNoRows {
-		_, err = r.App.DB.Exec(`INSERT INTO "user" (first_name, last_name, sub) VALUES ($1, $2, $3)`, firstName, lastName, sub)
+		_, err = r.App.DB.Exec(`INSERT INTO trade.users (first_name, last_name, sub) VALUES (?, ?, ?)`, firstName, lastName, sub)
 		if err != nil {
 			return err
 		}

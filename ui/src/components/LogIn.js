@@ -16,7 +16,7 @@ export default function LogIn({isLoggedIn, setLogIn}) {
     const navigate = useNavigate()
 
     const [username, setUsername] = useState("")
-    const [tdReg, setTdReg] = useState(false)
+    const [tdLogin, setTDLogin] = useState(false)
     const [error, setError] = useState('')
 
     const cookieValue = (val) => document.cookie
@@ -27,37 +27,40 @@ export default function LogIn({isLoggedIn, setLogIn}) {
     useEffect(() => {
         let jwt = cookieValue("ugly_jwt")
         if (jwt !== undefined) {
-            fetch("/auth/login", {
-                method: "GET"})
-                .then(async response => {
-                    const hasJson = response.headers.get('content-type')?.includes('application/json')
-                    const data = hasJson ? await response.json() : null
+            fetch("/auth/login", {method: "GET"})
+            .then(async response => {
+                const hasJson = response.headers.get('content-type')?.includes('application/json')
+                const data = hasJson ? await response.json() : null
 
-                    if (!response.ok) {
-                        let error = (data && data.error) || response.status
-                        return Promise.reject(error)
-                    }
+                if (!response.ok) {
+                    let error = (data && data.error) || response.status
+                    return Promise.reject(error)
+                }
 
-                    setLogIn(data.loggedIn)
-                    setUsername(data.username)
-                })
+                setLogIn(data.loggedIn)
+                setUsername(data.username)
+            })
         }
     }, [])
 
-    const routeTdReg = () => {
-        let app_access_token = getCookie('app_access_token')
-        fetch('/auth/get_api_key', {
-            method: 'GET',
-            headers: {'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + app_access_token}
-        })
-        .then(response => {
-            if (response.status === 200) {
-                response.json().then(json => {
-                    let key = json['api_key']
-                    window.location.href = `https://auth.tdameritrade.com/auth?response_type=code&redirect_uri=https://localhost:8000&client_id=${key}%40AMER.OAUTHAP`
-                })
+    useEffect(() => {
+        tdVerify()
+    }, isLoggedIn)
+
+    const tdVerify = () => {
+        fetch('/auth/verify_td')
+        .then(async response => {
+            const hasJson = response.headers.get('content-type')?.includes('application/json')
+            const data = hasJson ? await response.json() : null
+
+            if (!response.ok) {
+                let error = (data && data.error) || response.status
+                return Promise.reject(error)
             }
+
+            console.log(data.valid)
+            setTDLogin(data.valid)
+            setError(data.error)
         })
     }
 
@@ -80,8 +83,16 @@ export default function LogIn({isLoggedIn, setLogIn}) {
 
     return (
         <div className='logIn'>
-            {isLoggedIn ? <div>{tdReg ? undefined : <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>}
-                    Logged in as {username} | <AccountIcon /> | <div id='logout' onClick={() => handleLogout()}>Log Out</div></div> :
+            {
+                isLoggedIn ?
+                    <div>
+                        Logged in as {username} | <AccountIcon /> | <div id='logout' onClick={() => handleLogout()}>Log Out</div><br/>
+                        {
+                            tdLogin ?
+                                <span id='tdRegister'>Connected to TD Ameritrade</span> :
+                                <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
+                        }
+                    </div> :
             <a href="/auth/login"><button>{"Log in with Google"}</button></a>}
             <p>{error}</p>
         </div>

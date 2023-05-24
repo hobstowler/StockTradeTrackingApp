@@ -233,6 +233,11 @@ form button {
   width: fit-content;
 }
 
+span#tdRegister {
+  font-weight: bold;
+  color: green;
+}
+
 .logIn button {
   background-color: blue;
   border: 3px solid beige;

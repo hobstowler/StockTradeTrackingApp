@@ -11,6 +11,7 @@ import (
 	"github.com/Finnhub-Stock-API/finnhub-go/v2"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	"os"
 )
 
 func main() {
@@ -26,10 +27,16 @@ func main() {
 		return
 	}
 
-	database, err := db.ConnectUnixSocket()
+	database, err := db.GetDB()
 	if err != nil {
 		fmt.Println("Could not access database: %s", err)
 		return
+	} else {
+		if os.Getenv("LOCAL") == "1" {
+			fmt.Println("Local Database retrieved")
+		} else {
+			fmt.Println("Database retrieved.")
+		}
 	}
 
 	cfg := finnhub.NewConfiguration()
@@ -64,7 +71,7 @@ func main() {
 	stocks.Routes(router)
 	crypto.Routes(router)
 
-	err = router.Run(":3001")
+	err = router.RunTLS(":3001", "./web/server.crt", "./web/server.key")
 	if err != nil {
 		fmt.Println(err.Error())
 	}

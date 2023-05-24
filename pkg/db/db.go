@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/stdlib"
 	_ "modernc.org/sqlite"
@@ -36,25 +37,26 @@ func InitDB(a *config.AppConfig) {
 	fmt.Println("Database Initialized.")
 }
 
-func GetDB(path string, local bool) *sql.DB {
-	if !local {
-		db, err := ConnectUnixSocket()
+func GetDB() (*sql.DB, error) {
+	if os.Getenv("LOCAL") != "1" {
+		db, err := getGCPDatabase()
 		if err != nil {
 			fmt.Println(err)
 		}
-		return db
+		return db, err
 	} else {
-		db, err := sql.Open("sqlite", path)
+		fmt.Println("Fetching local database instance.")
+		db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/trade?parseTime=true")
 		if err != nil {
 			fmt.Println(err)
 		}
-		return db
+		return db, err
 	}
 }
 
 // connectUnixSocket initializes a Unix socket connection pool for
 // a Cloud SQL instance of Postgres.
-func ConnectUnixSocket() (*sql.DB, error) {
+func getGCPDatabase() (*sql.DB, error) {
 	dbUser, err := auth.GetGCPSecret("db_user", -1)
 	if err != nil {
 		return &sql.DB{}, errors.New("Could not access db_user secret.")
