@@ -37,7 +37,7 @@ func Routes(g *gin.Engine) {
 	auth.GET("/return_auth", Repo.returnAuth)
 	auth.GET("/td_auth", Repo.tdAuth)
 	auth.GET("/td_return_auth", Repo.tdReturnAuth)
-	auth.GET("/td_refresh_auth", Repo.tdRefresh)
+	//auth.GET("/td_refresh_auth", Repo.tdRefresh)
 	auth.GET("/verify_td", Repo.verifyTD)
 }
 
@@ -125,7 +125,6 @@ type tdTokenResp struct {
 
 func (r *Repository) tdReturnAuth(c *gin.Context) {
 	code := c.Query("code")
-	apiKey := r.App.TdApi
 	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
 
 	// Encode body data
@@ -133,7 +132,7 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 	data.Set("grant_type", "authorization_code")
 	data.Set("access_type", "offline")
 	data.Set("code", code)
-	data.Set("client_id", apiKey)
+	data.Set("client_id", r.App.TdApi)
 	data.Set("redirect_uri", "http://"+c.Request.Host+"/auth/td_return_auth")
 	encodedData := data.Encode()
 
@@ -201,14 +200,52 @@ func (r *Repository) verifyTD(c *gin.Context) {
 	return
 }
 
-func (r *Repository) tdRefresh(c *gin.Context) {
-	refresh_token, _ := c.Cookie("td_refresh")
-	if refresh_token != "" {
-		c.JSON(http.StatusBadRequest, "No refresh token")
-		return
+func (r *Repository) TdRefresh(claims *CustomClaims, c *gin.Context) error {
+	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
+
+	// Encode body data
+	data := url.Values{}
+	data.Set("grant_type", "refresh_token")
+	data.Set("client_id", r.App.TdApi)
+	data.Set("refresh_token", claims.RefreshToken)
+	encodedData := data.Encode()
+
+	// Create request and set headers
+	req, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(encodedData))
+	if err != nil {
+		fmt.Println(err)
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Make token request to TD Ameritrade
+	res, err := http.DefaultClient.Do(req)
+	defer res.Body.Close()
+
+	// TODO handle a bad response here
+	// Read in body from TD
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return err
 	}
 
-	//TODO
+	var result tdTokenResp
+	_ = json.Unmarshal(body, &result)
+	claims.AccessToken = result.AccessToken
+	claims.AccessTokenExpiry = result.ExpiresIn
+
+	jwtString, err := GenerateJWT(*claims, r.App.OAuth)
+	if err != nil {
+		return err
+	}
+
+	// recalculate token expiration
+	expiryDate := claims.IssuedAt.Add(time.Duration(claims.RefreshTokenExpiry) * time.Second)
+	newExpiresIn := int(expiryDate.Sub(time.Now()).Seconds())
+	fmt.Println(claims.RefreshTokenExpiry)
+	fmt.Println(newExpiresIn)
+
+	c.SetCookie("jwt_td", jwtString, newExpiresIn, "/", c.Request.URL.Host, false, true)
+	return nil
 }
 
 // Generate a state variable
@@ -455,6 +492,27 @@ func GenerateJWT(customClaim CustomClaims, secret string) (string, error) {
 		return "", err
 	}
 	return ss, nil
+}
+
+func ValidateCookieJWT(cookieName string, secret string, c *gin.Context) (*CustomClaims, error) {
+	tokenString, err := c.Cookie(cookieName)
+	if err != nil {
+		return nil, err
+	}
+
+	tokenClaims, err := ValidateJWT(tokenString, secret)
+	if err != nil {
+		return nil, err
+	}
+
+	accessExpiration := tokenClaims.IssuedAt.Add(time.Duration(tokenClaims.AccessTokenExpiry) * time.Second)
+	if cookieName == "jwt_td" && accessExpiration.Before(time.Now().Add(-5*time.Minute)) {
+		err = Repo.TdRefresh(tokenClaims, c)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return tokenClaims, nil
 }
 
 // Validates a given JWT string using a provided secret.

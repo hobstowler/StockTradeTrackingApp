@@ -14,6 +14,8 @@ import Crypto from "./pages/Crypto";
 import {getAccounts, getAccountPositions, getFullAccount, parsePositions} from "./middleware/accounts";
 import {checkAccessCodeExpiry} from "./middleware/misc";
 import Account from "./pages/Account";
+import LogIn from "./components/LogIn";
+import Balances from "./components/Balances";
 
 function App() {
     const [isLoggedIn, setLogIn] = useState(false)
@@ -49,7 +51,6 @@ function App() {
                 return Promise.reject(error)
             }
 
-            console.log(data[0].securitiesAccount)
             updateAccounts(data)
             if (activeAccountOverride === false) {
                 setActiveAccount(data[0].securitiesAccount)
@@ -57,17 +58,26 @@ function App() {
         })
     }
 
+    const changeActiveAccount = (accountId) => {
+
+    }
+
+    const disconnect = () => {
+
+    }
+
     return (
         <div className="App">
             <BrowserRouter>
-                <Header activePage={activePage}
-                        account={activeAccount}
-                        balances={activeAccount.currentBalances}
-                        initialBalances={activeAccount.initialBalances}
-                        isLoggedIn={isLoggedIn}
-                        setLogIn={setLogIn}
-                        tdConnected={tdConnected}
-                        setTdConnected={setTdConnected}/>
+                <LogIn activeAccount={activeAccount}
+                       changeActiveAccount={changeActiveAccount}
+                       isLoggedIn={isLoggedIn}
+                       setLogIn={setLogIn}
+                       tdConnected={tdConnected}
+                       setTdConnected={setTdConnected}
+                       disconnect={disconnect} />
+                <Header activePage={activePage}/>
+                <Balances balances={activeAccount.currentBalances} />
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home setActive={setActive} positions={positions} openOrders={openOrders} />} />

@@ -16,19 +16,23 @@ type Repository struct {
 	App *config.AppConfig
 }
 
-type Accounts []struct {
-	SecuritiesAccount struct {
-		Type                    string            `json:"type"`
-		AccountID               string            `json:"accountId"`
-		RoundTrips              float64           `json:"roundTrips"`
-		IsDayTrader             bool              `json:"isDayTrader"`
-		IsClosingOnlyRestricted bool              `json:"isClosingOnlyRestricted"`
-		Positions               []Position        `json:"positions"`
-		OrderStrategies         []OrderStrategy   `json:"orderStrategies"`
-		InitialBalances         InitialBalances   `json:"initialBalances"`
-		CurrentBalances         CurrentBalances   `json:"currentBalances"`
-		ProjectedBalances       ProjectedBalances `json:"projectedBalances"`
-	} `json:"securitiesAccount"`
+type Accounts []Account
+
+type Account struct {
+	SecuritiesAccount SecuritiesAccount `json:"securitiesAccount"`
+}
+
+type SecuritiesAccount struct {
+	Type                    string            `json:"type"`
+	AccountID               string            `json:"accountId"`
+	RoundTrips              float64           `json:"roundTrips"`
+	IsDayTrader             bool              `json:"isDayTrader"`
+	IsClosingOnlyRestricted bool              `json:"isClosingOnlyRestricted"`
+	Positions               []Position        `json:"positions"`
+	OrderStrategies         []OrderStrategy   `json:"orderStrategies"`
+	InitialBalances         InitialBalances   `json:"initialBalances"`
+	CurrentBalances         CurrentBalances   `json:"currentBalances"`
+	ProjectedBalances       ProjectedBalances `json:"projectedBalances"`
 }
 
 type InitialBalances struct {
@@ -223,12 +227,12 @@ func InitRepo(a *config.AppConfig) {
 }
 
 func (r *Repository) getAccounts(c *gin.Context) {
-	tokenString, err := c.Cookie("jwt_td")
+	tokenClaims, err := auth.ValidateCookieJWT("jwt_td", r.App.OAuth, c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	tokenClaims, err := auth.ValidateJWT(tokenString, r.App.OAuth)
+
 	//TODO check expiration
 	url := "https://api.tdameritrade.com/v1/accounts?fields=orders,positions"
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -258,5 +262,37 @@ func (r *Repository) getAccounts(c *gin.Context) {
 }
 
 func (r *Repository) getAccount(c *gin.Context) {
+	accountId := c.Param("accountID")
+	tokenString, err := c.Cookie("jwt_td")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+	tokenClaims, err := auth.ValidateJWT(tokenString, r.App.OAuth)
+	//TODO check expiration
+	url := fmt.Sprintf("https://api.tdameritrade.com/v1/accounts/%s?fields=orders,positions", accountId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error creating request: %s", err.Error()))
+	}
 
+	req.Header.Add("Authorization", "Bearer "+tokenClaims.AccessToken)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error requesting account information: %s", err.Error()))
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		var result map[string]string
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusInternalServerError, result)
+		return
+	} else {
+		var result Account
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusOK, result)
+		return
+	}
 }

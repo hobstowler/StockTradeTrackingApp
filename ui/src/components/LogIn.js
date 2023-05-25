@@ -1,18 +1,8 @@
 import {useSearchParams, useNavigate, Link} from "react-router-dom";
 import {useEffect, useState} from "react";
-import {
-    checkAccessCodeExpiry,
-    clearCookie,
-    fetchAccessToken,
-    getCookie,
-    refreshAccessToken,
-    setCookie
-} from "../middleware/misc";
-import {BsFillGearFill} from 'react-icons/bs'
 import AccountIcon from "./AccountIcon";
-import Cookies from "js-cookie"
 
-export default function LogIn({isLoggedIn, setLogIn, tdConnected, setTdConnected}) {
+export default function LogIn({activeAccount, changeActiveAccount, isLoggedIn, setLogIn, tdConnected, setTdConnected, disconnect}) {
     const navigate = useNavigate()
 
     const [username, setUsername] = useState("")
@@ -24,8 +14,7 @@ export default function LogIn({isLoggedIn, setLogIn, tdConnected, setTdConnected
         ?.split('=')[1];
 
     useEffect(() => {
-        let jwt = cookieValue("ugly_jwt")
-        if (jwt !== undefined) {
+        if (cookieValue("ugly_jwt") !== undefined) {
             fetch("/auth/login", {method: "GET"})
             .then(async response => {
                 const hasJson = response.headers.get('content-type')?.includes('application/json')
@@ -44,7 +33,7 @@ export default function LogIn({isLoggedIn, setLogIn, tdConnected, setTdConnected
 
     useEffect(() => {
         tdVerify()
-    }, isLoggedIn)
+    }, [isLoggedIn])
 
     const tdVerify = () => {
         fetch('/auth/verify_td')
@@ -57,43 +46,49 @@ export default function LogIn({isLoggedIn, setLogIn, tdConnected, setTdConnected
                 return Promise.reject(error)
             }
 
-            console.log(data.valid)
             setTdConnected(data.valid)
             setError(data.error)
         })
     }
 
-    const handleLogin = (e) => {
-        e.preventDefault()
-    }
-
     const handleLogout = () => {
-        fetch('/auth/logout', {
-            method: 'POST'
-        })
+        fetch('/auth/logout', {method: 'POST'})
         .then(response => {
             if (response.status === 200) {
                 setLogIn(false)
-                setUsername('Username')
+                setUsername('')
                 navigate('/loggedOut')
             }
         })
     }
 
+    const tdDisconnect = () => {
+        disconnect()
+    }
+
+    const settingScrollOut = () => {
+        // TODO
+    }
+
     return (
-        <div className='logIn'>
-            {
-                isLoggedIn ?
-                    <div>
-                        Logged in as {username} | <AccountIcon /> | <div id='logout' onClick={() => handleLogout()}>Log Out</div><br/>
-                        {
-                            tdConnected ?
-                                <span id='tdRegister'>Connected to TD Ameritrade</span> :
-                                <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
-                        }
-                    </div> :
-            <a href="/auth/login"><button>{"Log in with Google"}</button></a>}
-            <p>{error}</p>
+        <div className='wrapper'>
+            <div className='logIn'>
+                {
+                    isLoggedIn ?
+                        <div>
+                            Logged in as {username} | <div className='accountSettings'><AccountIcon /></div> | <div id='logout' onClick={() => handleLogout()}>Log Out</div><br/>
+                            {
+                                tdConnected ?
+                                    <div>
+                                        <div id='tdRegister'>Connected to TD Ameritrade | <span id='tdDisconnect' onClick={tdDisconnect}>Disconnect</span></div>
+                                        <div>Active Account: {activeAccount !== undefined ? activeAccount.accountId : ''}</div>
+                                    </div> :
+                                    <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
+                            }
+                        </div> :
+                <a href="/auth/login"><button>{"Log in with Google"}</button></a>}
+                <p>{error}</p>
+            </div>
         </div>
     )
 }

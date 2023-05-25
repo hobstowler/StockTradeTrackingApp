@@ -1,40 +1,13 @@
 import React, {useEffect, useState} from 'react'
-import {getCookie} from "../middleware/misc";
-import {getAccountBalances} from "../middleware/accounts";
+import {BarLoader} from "react-spinners";
 
 export default function Balances({balances}) {
-    //console.log(balances)
-    /*const [balances, setBalances] = useState({
-        'accountValue': 1000,
-        'cash': 505,
-        'buyingPower': 100,
-        'optionBuyingPower': 50,
-        'longStocks': 1500,
-        'longOptions': 1000,
-        'shortStocks': 500,
-        'shortOptions': 150
-    })
+    const [showBalance, setShowBalance] = useState(false)
 
-    /*useEffect(() => {
-        getBalances()
-
-        const interval = setInterval(() => {
-            getBalances()
-        }, 1000 * 60 * 5)
-        return () => clearInterval(interval)
-    }, [])
-
-    const getBalances = () => {
-        getAccountBalances()
-        .then(response => response.json())
-        .then(json => setBalances(json[0].securitiesAccount.currentBalances))
-    }*/
-
-
-    if (balances !== undefined) {
+    if (balances !== undefined && showBalance === true) {
     return (
-        <div className='balances'>
-            <div>
+        <div className='wrapper'>
+            <div className='balanceSummary'>
                 <table cellSpacing='0'>
                     <tbody>
                         <tr>
@@ -42,21 +15,33 @@ export default function Balances({balances}) {
                             <td>Cash Balance:</td><td><div className="balNum">${balances.cashBalance}</div></td>
                         </tr>
                         <tr>
-                            <td>Stock Buying Power:</td><td><div className="balNum">${balances.buyingPower}</div></td>
-                            <td>Long Stocks:</td><td><div className="balNum">${balances.longMarketValue}</div></td>
-                            <td>Short Stocks:</td><td><div className="balNum">${balances.shortMarketValue || ''}</div></td>
+                            <td>Stock Buying Power:</td><td><div className="balNum">${balances.buyingPower || '0.00'}</div></td>
+                            <td>Long Stocks:</td><td><div className="balNum">${balances.longMarketValue || '0.00'}</div></td>
+                            <td>Short Stocks:</td><td><div className="balNum">${balances.shortMarketValue || '0.00'}</div></td>
                         </tr>
                         <tr>
-                            <td>Option Buying Power:</td><td><div className="balNum">${balances.buyingPowerNonMarginableTrade || ''}</div></td>
-                            <td>Long Options:</td><td><div className="balNum">${balances.longOptionMarketValue || ''}</div></td>
-                            <td>Short Options:</td><td><div className="balNum">${balances.shortOptionMarketValue || ''}</div></td>
+                            <td>Option Buying Power:</td><td><div className="balNum">${balances.buyingPowerNonMarginableTrade || '0.00'}</div></td>
+                            <td>Long Options:</td><td><div className="balNum">${balances.longOptionMarketValue || '0.00'}</div></td>
+                            <td>Short Options:</td><td><div className="balNum">${balances.shortOptionMarketValue || '0.00'}</div></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+            <div className='balanceDrawerToggle' onClick={() =>setShowBalance(false)}>- Collapse -</div>
         </div>
     )}
+    else if (balances !== undefined && showBalance === false) {
+        return(
+            <div className='wrapper'>
+                <div className='balanceDrawerToggle' onClick={() => setShowBalance(true)}>- Expand -</div>
+            </div>
+        )
+    }
     else {
-        return(<div></div>)
+        return(
+            <div className='wrapper'>
+                <div className='loader'><BarLoader color={"green"}/></div>
+            </div>
+        )
     }
 }
