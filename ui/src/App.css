@@ -273,47 +273,56 @@ form input {
   width: 100px;
 }
 
-.balances {
+.balanceSummary {
   width: 100%;
   display: inline-block;
 }
 
-.balances > div {
+.balanceSummary > div {
   width: 800px;
   margin: 0 auto;
 }
 
-.balances table {
-  float: left;
-  margin-left: 50px;
-  margin-top: 5px;
+.balanceSummary table {
+  margin: 10px auto;
 }
 
-.balances td {
+.balanceSummary td {
   font-weight: 500;
   font-size: 12px;
   text-align: right;
   padding-right: 20px;
 }
 
-.balances tbody tr:nth-child(2) td {
+.balanceSummary tbody tr:nth-child(2) td {
   border-top: 2px solid green;
 }
 
-.balances tr td:nth-child(odd) {
+.balanceSummary tr td:nth-child(odd) {
   padding-left: 40px;
 }
 
-.balances tr td:first-child {
+.balanceSummary tr td:first-child {
   padding-left: 0;
 }
 
-.balances tr td:nth-child(2) {
+.balanceSummary tr td:nth-child(2) {
   border-right: 2px solid green;
 }
 
-.balances tr td:nth-child(even) {
+.balanceSummary tr td:nth-child(even) {
   color: green;
+}
+
+.balanceDrawerToggle {
+  margin: 0 auto;
+  width: 200px;
+  text-align: center;
+  font-size: 12px;
+  font-width: bold;
+  cursor: pointer;
+  border-top: 2px solid green;
+  padding: 3px 0;
 }
 
 .body h1 {

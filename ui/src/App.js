@@ -24,12 +24,12 @@ function App() {
     const [activePage, setActive] = useState('home')
     const [accounts, updateAccounts] = useState([])
     const [activeAccount, setActiveAccount] = useState({})
+    const [activePositions, updateActivePositions] = useState([])
+    const [openOrders, updateOpenOrders] = useState([])
     const [activeAccountOverride, setActiveAccountOverride] = useState(false)
     const [currentBalances, setCurrentBalances] = useState({})
     const [balances, updateBalances] = useState({})
     const [initialBalances, updateInitialBalances] = useState({})
-    const [positions, updatePositions] = useState({})
-    const [openOrders, updateOpenOrders] = useState([])
 
     useEffect(() => {
         getAccount()
@@ -39,6 +39,21 @@ function App() {
 
         return () => clearInterval(interval)
     }, [])
+
+    useEffect(() => {
+        if (activeAccount === undefined) {
+            updateActivePositions([])
+            updateOpenOrders([])
+            return
+        }
+
+        if (activeAccount.positions !== undefined) {
+            updateActivePositions(activeAccount.positions)
+        }
+        if (activeAccount.orderStrategies !== undefined) {
+            updateOpenOrders(activeAccount.orderStrategies)
+        }
+    }, [activeAccount])
 
     const getAccount = () => {
         fetch('/account/')
@@ -77,12 +92,13 @@ function App() {
                        setTdConnected={setTdConnected}
                        disconnect={disconnect} />
                 <Header activePage={activePage}/>
-                <Balances balances={activeAccount.currentBalances} />
+                <Balances balances={activeAccount.currentBalances}
+                          initialBalances={activeAccount.initialBalances}/>
                 <div className='body'>
                     <Routes>
-                        <Route path='/' element={<Home setActive={setActive} positions={positions} openOrders={openOrders} />} />
-                        <Route path='/stocks' element={<Stocks stocks={positions.stocks} openOrders={openOrders} setActive={setActive} />} />
-                        <Route path='/options' element={<Options options={positions.options} openOrders={openOrders} setActive={setActive} />} />>
+                        <Route path='/' element={<Home setActive={setActive} positions={activePositions} openOrders={openOrders} />} />
+                        <Route path='/stocks' element={<Stocks positions={activePositions} openOrders={openOrders} setActive={setActive} />} />
+                        <Route path='/options' element={<Options positions={activePositions} openOrders={openOrders} setActive={setActive} />} />>
                         <Route path='/crypto' element={<Crypto setActive={setActive} />} />
                         <Route path='/watch' element={<Watchlist setActive={setActive} />} />
                         <Route path='/account' element={<Account setActive={setActive} />} />

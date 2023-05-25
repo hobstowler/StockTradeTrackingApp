@@ -241,8 +241,6 @@ func (r *Repository) TdRefresh(claims *CustomClaims, c *gin.Context) error {
 	// recalculate token expiration
 	expiryDate := claims.IssuedAt.Add(time.Duration(claims.RefreshTokenExpiry) * time.Second)
 	newExpiresIn := int(expiryDate.Sub(time.Now()).Seconds())
-	fmt.Println(claims.RefreshTokenExpiry)
-	fmt.Println(newExpiresIn)
 
 	c.SetCookie("jwt_td", jwtString, newExpiresIn, "/", c.Request.URL.Host, false, true)
 	return nil

@@ -1,19 +1,23 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import StockList from "../components/StockList";
 import StockWatchList from "../components/StockWatchList";
 import KeyIndicators from "../components/KeyIndicators";
 import OpenOrdersModule from "../components/OpenOrdersModule";
 
-export default function Stocks({stocks, openOrders, setActive}) {
+export default function Stocks({positions, openOrders, setActive}) {
+  const [longStocks, setLongStocks] = useState([])
+  const [shortStocks, setShortStocks] = useState([])
+  const [activeStock, setActiveStock] = useState([])
+  const [loading, updateLoading] = useState(false)
+
     useEffect(() => {
         setActive('stocks')
     }, [])
 
-    console.log(stocks)
     return (
         <div>
             <div id='left'>
-                <StockList long={stocks.longStocks} short={stocks.shortStocks}/>
+                <StockList long={longStocks} short={shortStocks}/>
             </div>
             <div id='center'>
                 <OpenOrdersModule openOrders={openOrders}/>
