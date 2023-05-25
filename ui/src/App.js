@@ -17,44 +17,43 @@ import Account from "./pages/Account";
 
 function App() {
     const [isLoggedIn, setLogIn] = useState(false)
+    const [tdConnected, setTdConnected] = useState(false)
+
     const [activePage, setActive] = useState('home')
-    const [account, updateAccount] = useState({})
+    const [accounts, updateAccounts] = useState([])
+    const [activeAccount, setActiveAccount] = useState({})
+    const [activeAccountOverride, setActiveAccountOverride] = useState(false)
+    const [currentBalances, setCurrentBalances] = useState({})
     const [balances, updateBalances] = useState({})
     const [initialBalances, updateInitialBalances] = useState({})
-    const [positions, updatePositions] = useState({
-        stocks: {
-            longStocks: [],
-            shortStocks: []
-        },
-        options: {
-            longOptions: [],
-            shortOptions: []
-        }
-    })
+    const [positions, updatePositions] = useState({})
     const [openOrders, updateOpenOrders] = useState([])
 
     useEffect(() => {
-        checkAccessCodeExpiry()
         getAccount()
-        //getPositions()
         const interval = setInterval(() => {
             getAccount()
-            //getPositions()
         }, 1000 * 60 * 5)
+
         return () => clearInterval(interval)
     }, [])
 
     const getAccount = () => {
-        getFullAccount()
-        .then(response => response.json())
-        .then(json => {
-            console.log(json[0])
-            updateAccount(json[0])
-            updateBalances(json[0].securitiesAccount.currentBalances)
-            updateInitialBalances(json[0].securitiesAccount.initialBalances)
-            updatePositions(parsePositions(json[0].securitiesAccount.positions))
-            console.log(json[0].securitiesAccount.orderStrategies)
-            updateOpenOrders(json[0].securitiesAccount.orderStrategies)
+        fetch('/account/')
+        .then(async response => {
+            const hasJson = response.headers.get('content-type')?.includes('application/json')
+            const data = hasJson ? await response.json() : null
+
+            if (!response.ok) {
+                let error = (data && data.error) || response.status
+                return Promise.reject(error)
+            }
+
+            console.log(data[0].securitiesAccount)
+            updateAccounts(data)
+            if (activeAccountOverride === false) {
+                setActiveAccount(data[0].securitiesAccount)
+            }
         })
     }
 
@@ -62,11 +61,13 @@ function App() {
         <div className="App">
             <BrowserRouter>
                 <Header activePage={activePage}
-                        account={account}
-                        balances={balances}
-                        initialBalances={initialBalances}
+                        account={activeAccount}
+                        balances={activeAccount.currentBalances}
+                        initialBalances={activeAccount.initialBalances}
                         isLoggedIn={isLoggedIn}
-                        setLogIn={setLogIn}/>
+                        setLogIn={setLogIn}
+                        tdConnected={tdConnected}
+                        setTdConnected={setTdConnected}/>
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home setActive={setActive} positions={positions} openOrders={openOrders} />} />

@@ -124,7 +124,6 @@ type tdTokenResp struct {
 }
 
 func (r *Repository) tdReturnAuth(c *gin.Context) {
-	fmt.Println("returning!")
 	code := c.Query("code")
 	apiKey := r.App.TdApi
 	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
@@ -424,6 +423,9 @@ func getNames(authorization string) (string, string, error) {
 	}
 	req.Header.Add("Authorization", authorization)
 	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)

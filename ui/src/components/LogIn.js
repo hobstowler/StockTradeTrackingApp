@@ -12,11 +12,10 @@ import {BsFillGearFill} from 'react-icons/bs'
 import AccountIcon from "./AccountIcon";
 import Cookies from "js-cookie"
 
-export default function LogIn({isLoggedIn, setLogIn}) {
+export default function LogIn({isLoggedIn, setLogIn, tdConnected, setTdConnected}) {
     const navigate = useNavigate()
 
     const [username, setUsername] = useState("")
-    const [tdLogin, setTDLogin] = useState(false)
     const [error, setError] = useState('')
 
     const cookieValue = (val) => document.cookie
@@ -59,7 +58,7 @@ export default function LogIn({isLoggedIn, setLogIn}) {
             }
 
             console.log(data.valid)
-            setTDLogin(data.valid)
+            setTdConnected(data.valid)
             setError(data.error)
         })
     }
@@ -88,7 +87,7 @@ export default function LogIn({isLoggedIn, setLogIn}) {
                     <div>
                         Logged in as {username} | <AccountIcon /> | <div id='logout' onClick={() => handleLogout()}>Log Out</div><br/>
                         {
-                            tdLogin ?
+                            tdConnected ?
                                 <span id='tdRegister'>Connected to TD Ameritrade</span> :
                                 <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
                         }
