@@ -37,6 +37,7 @@ func Routes(g *gin.Engine) {
 	auth.GET("/return_auth", Repo.returnAuth)
 	auth.GET("/td_auth", Repo.tdAuth)
 	auth.GET("/td_return_auth", Repo.tdReturnAuth)
+	auth.POST("/disconnect", Repo.disconnect)
 	//auth.GET("/td_refresh_auth", Repo.tdRefresh)
 	auth.GET("/verify_td", Repo.verifyTD)
 }
@@ -73,7 +74,7 @@ func (r *Repository) login(c *gin.Context) {
 func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 	tokenClaims, err := ValidateJWT(tokenString, r.App.OAuth)
 	if err != nil {
-		fmt.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, err.Error())
 	}
 	sub := tokenClaims.Sub
 
@@ -100,15 +101,21 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 
 // Clears out the ugly_jwt cookie, thus "logging" the user out of the application
 func (r *Repository) logout(c *gin.Context) {
+	c.SetCookie("jwt_td", "", -1, "/", c.Request.URL.Host, false, false)
 	c.SetCookie("ugly_jwt", "", -1, "/", c.Request.URL.Host, false, false)
-	c.JSON(200, "You are logged out.")
+	c.Redirect(http.StatusFound, "/")
+}
+
+func (r *Repository) disconnect(c *gin.Context) {
+	c.SetCookie("jwt_td", "", -1, "/", c.Request.URL.Host, false, false)
+	c.Redirect(http.StatusFound, "/")
 }
 
 func (r *Repository) tdAuth(c *gin.Context) {
 	tdUrlBuilder := strings.Builder{}
 	tdUrlBuilder.WriteString("https://auth.tdameritrade.com/auth")
 	tdUrlBuilder.WriteString("?response_type=code&redirect_uri=")
-	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "http://"+c.Request.Host))
+	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "https://"+c.Request.Host))
 	tdUrlBuilder.WriteString(fmt.Sprintf("&client_id=%s@AMER.OAUTHAP", r.App.TdApi))
 	tdUrl := tdUrlBuilder.String()
 	c.Redirect(http.StatusFound, tdUrl)
@@ -133,13 +140,13 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 	data.Set("access_type", "offline")
 	data.Set("code", code)
 	data.Set("client_id", r.App.TdApi)
-	data.Set("redirect_uri", "http://"+c.Request.Host+"/auth/td_return_auth")
+	data.Set("redirect_uri", "https://"+c.Request.Host+"/auth/td_return_auth")
 	encodedData := data.Encode()
 
 	// Create request and set headers
 	req, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(encodedData))
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, "Error creating request")
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -156,7 +163,6 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 
 	var result tdTokenResp
 	_ = json.Unmarshal(body, &result)
-	fmt.Println(result)
 
 	tdClaims := CustomClaims{
 		FirstName:          "",
@@ -214,7 +220,7 @@ func (r *Repository) TdRefresh(claims *CustomClaims, c *gin.Context) error {
 	// Create request and set headers
 	req, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(encodedData))
 	if err != nil {
-		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, "Error creating request")
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
@@ -279,7 +285,7 @@ func (r *Repository) oAuth(c *gin.Context) {
 	var authBuilder strings.Builder
 	authBuilder.WriteString("https://accounts.google.com/o/oauth2/v2/auth")
 	authBuilder.WriteString(fmt.Sprintf("?response_type=code&client_id=%s", r.App.ClientId))
-	authBuilder.WriteString(fmt.Sprintf("&redirect_uri=http://%s%s", c.Request.Host, "/auth/return_auth"))
+	authBuilder.WriteString(fmt.Sprintf("&redirect_uri=https://%s%s", c.Request.Host, "/auth/return_auth"))
 	authBuilder.WriteString(fmt.Sprintf("&scope=profile&state=%s", state))
 	authUrl := authBuilder.String()
 
@@ -349,7 +355,7 @@ func (r *Repository) returnAuth(c *gin.Context) {
 		Code:         code,
 		ClientId:     r.App.ClientId,
 		ClientSecret: r.App.OAuth,
-		RedirectUri:  "http://" + c.Request.Host + "/auth/return_auth",
+		RedirectUri:  "https://" + c.Request.Host + "/auth/return_auth",
 		GrantType:    "authorization_code",
 	}
 	tokenJSONPayload, _ := json.Marshal(tokenJson)

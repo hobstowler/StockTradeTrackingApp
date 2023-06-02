@@ -4,7 +4,7 @@ import Home from "./pages/Home";
 import Header from "./components/Header";
 import Navigation from "./components/Navigation";
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom';
 import Footer from "./components/Footer";
 import Watchlist from "./pages/Watchlist";
 import {useEffect, useState} from "react";
@@ -79,7 +79,15 @@ function App() {
     }
 
     const disconnect = () => {
-
+        fetch('/auth/disconnect', {
+            method: 'POST'
+        })
+          .then(response => {
+              if (response.status === 302 || response.status === 200) {
+                  setTdConnected(false)
+                  // TODO other logout-related tasks
+              }
+          })
     }
 
     return (

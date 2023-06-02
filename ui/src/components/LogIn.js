@@ -62,10 +62,6 @@ export default function LogIn({activeAccount, changeActiveAccount, isLoggedIn, s
         })
     }
 
-    const tdDisconnect = () => {
-        disconnect()
-    }
-
     const settingScrollOut = () => {
         // TODO
     }
@@ -80,7 +76,7 @@ export default function LogIn({activeAccount, changeActiveAccount, isLoggedIn, s
                             {
                                 tdConnected ?
                                     <div>
-                                        <div id='tdRegister'>Connected to TD Ameritrade | <span id='tdDisconnect' onClick={tdDisconnect}>Disconnect</span></div>
+                                        <div id='tdRegister'>Connected to TD Ameritrade | <span id='tdDisconnect' onClick={disconnect}>Disconnect</span></div>
                                         <div>Active Account: {activeAccount !== undefined ? activeAccount.accountId : ''}</div>
                                     </div> :
                                     <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
