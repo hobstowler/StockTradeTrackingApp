@@ -152,22 +152,23 @@ nav .active {
   margin-top: 25px;
 }
 
-.keyIndicatorContainer fieldset {
+fieldset {
   height: 100px;
   border-width: 3px;
   border-left: none;
   border-right: none;
 }
 
-.keyIndicatorContainer legend {
+legend {
   font-size: 18px;
   font-weight: 700;
   margin-left: 50px;
 }
 
 .openOrdersContainer {
-  width: 800px;
-  margin: 0px 0px 25px 0px;
+  width: 780px;
+  overflow: hidden;
+  margin: 0 auto;
   background-color: beige;
 }
 
@@ -187,10 +188,6 @@ nav .active {
   border-width: 3px;
   border-left: none;
   border-right: none;
-}
-
-.openOrdersContainer legend {
-  cursor: pointer;
 }
 
 .logIn {
@@ -424,14 +421,13 @@ form input {
 }
 
 .openOrderItemContainer {
-  width: 780px;
+  width: 752px;
   margin: 2px 10px;
   height: 26px;
 }
 
 .openOrderItemContainer > div:first-child {
   display: inline-block;
-  width: 668px;
   padding: 2px 0px 3px;
   border: 1px solid black;
   border-radius: 6px;

@@ -4,7 +4,7 @@ export default function KeyIndicators({stock}) {
     return (
         <div className='keyIndicatorContainer'>
             <fieldset>
-                <legend>Key Indicators for {"AMD"} | {"Advanced Micro devices"}</legend>
+                <legend>Key Indicators for {stock ? stock.symbol : "n/a"} | {stock ? stock.description : "n/a"}</legend>
                 <div className='indicatorContainer'></div>
             </fieldset>
         </div>

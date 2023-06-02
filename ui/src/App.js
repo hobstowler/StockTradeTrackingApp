@@ -16,6 +16,7 @@ import {checkAccessCodeExpiry} from "./middleware/misc";
 import Account from "./pages/Account";
 import LogIn from "./components/LogIn";
 import Balances from "./components/Balances";
+import Insight from "./pages/Insight";
 
 function App() {
     const [isLoggedIn, setLogIn] = useState(false)
@@ -48,10 +49,10 @@ function App() {
         }
 
         if (activeAccount.positions !== undefined) {
-            updateActivePositions(activeAccount.positions)
+            updateActivePositions(activeAccount.positions || undefined)
         }
         if (activeAccount.orderStrategies !== undefined) {
-            updateOpenOrders(activeAccount.orderStrategies)
+            updateOpenOrders(activeAccount.orderStrategies || undefined)
         }
     }, [activeAccount])
 
@@ -97,11 +98,12 @@ function App() {
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home setActive={setActive} positions={activePositions} openOrders={openOrders} />} />
-                        <Route path='/stocks' element={<Stocks positions={activePositions} openOrders={openOrders} setActive={setActive} />} />
+                        <Route path='/stocks' element={<Stocks positions={activePositions} activeAccount={activeAccount} openOrders={openOrders} setActive={setActive} />} />
                         <Route path='/options' element={<Options positions={activePositions} openOrders={openOrders} setActive={setActive} />} />>
                         <Route path='/crypto' element={<Crypto setActive={setActive} />} />
                         <Route path='/watch' element={<Watchlist setActive={setActive} />} />
                         <Route path='/account' element={<Account setActive={setActive} />} />
+                        <Route path='/insight' element={<Insight setActive={setActive} />} />
                     </Routes>
                 </div>
                 <Footer />

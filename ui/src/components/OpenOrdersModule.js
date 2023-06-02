@@ -1,32 +1,39 @@
 import {useEffect, useState} from "react";
-import {BsArrowRightCircleFill, BsArrowDownCircleFill} from 'react-icons/bs'
 import OpenOrderItem from "./OpenOrderItem";
 
 export default function OpenOrdersModule({openOrders}) {
-    const [display, setDisplay] = useState(true)
+  const [display, setDisplay] = useState(true)
+  console.log(openOrders)
 
-    useEffect(() => {
-        if (openOrders === undefined || openOrders.length === 0) {
-            setDisplay(false)
-        } else {
-            setDisplay(true)
-        }
-    }, [openOrders])
-
-    const toggleDisplay = () => {
-        setDisplay(!display)
+  useEffect(() => {
+    if (openOrders === undefined || (Array.isArray(openOrders) && openOrders.length === 0)) {
+      console.log(false)
+      setDisplay(false)
+    } else {
+      setDisplay(true)
     }
+  }, [openOrders])
 
-    return(
-        <div className='openOrdersContainer'>
-            <h3 onClick={toggleDisplay}>{display ? <BsArrowDownCircleFill /> : <BsArrowRightCircleFill />}Open Orders:</h3>
-            {display ?
-                <div className='ordersContainer'>
-                    {(openOrders === undefined || openOrders.length === 0) ? "(Empty)" :
-                    openOrders.map((order, i) => <OpenOrderItem order={order} key={i} />)
-                    }
-                </div> : ""
-            }
-        </div>
+  const toggleDisplay = () => {
+    setDisplay(!display)
+  }
+
+  if (display) {
+    return (
+      <div className='openOrdersContainer'>
+        <fieldset>
+          <legend>Open Orders</legend>
+          {display ?
+            <div className='ordersContainer'>
+              {(openOrders === undefined || (Array.isArray(openOrders) && openOrders.length === 0)) ? "(Empty)" :
+                openOrders.map((order, i) => <OpenOrderItem order={order} key={i}/>)
+              }
+            </div> : ""
+          }
+        </fieldset>
+      </div>
     )
+  } else {
+    return (<div></div>)
+  }
 }

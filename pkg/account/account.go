@@ -16,6 +16,20 @@ type Repository struct {
 	App *config.AppConfig
 }
 
+func Routes(g *gin.Engine) {
+	account := g.Group("/account")
+	account.GET("/", Repo.getAccounts)
+	account.GET("/:accountId", Repo.getAccount)
+	account.GET("/:accountId/transactions", Repo.getTransactions)
+	account.GET("/:accountId/transactions/:transactionId", Repo.getTransaction)
+}
+
+func InitRepo(a *config.AppConfig) {
+	Repo = &Repository{
+		App: a,
+	}
+}
+
 type Accounts []Account
 
 type Account struct {
@@ -214,16 +228,51 @@ type OptionDeliverable struct {
 	AssetType        string  `json:"assetType"`
 }
 
-func Routes(g *gin.Engine) {
-	account := g.Group("/account")
-	account.GET("/", Repo.getAccounts)
-	account.GET("/:accountID", Repo.getAccount)
+type Transactions []Transaction
+
+type Transaction struct {
+	Type                          string          `json:"type"`
+	ClearingReferenceNumber       string          `json:"clearingReferenceNumber"`
+	SubAccount                    string          `json:"subAccount"`
+	SettlementDate                string          `json:"settlementDate"`
+	OrderId                       string          `json:"orderId"`
+	Sma                           float64         `json:"sma"`
+	RequirementReallocationAmount float64         `json:"requirementReallocationAmount"`
+	DayTradeBuyingPowerEffect     float64         `json:"dayTradeBuyingPowerEffect"`
+	NetAmount                     float64         `json:"netAmount"`
+	TransactionDate               string          `json:"transactionDate"`
+	OrderDate                     string          `json:"orderDate"`
+	TransactionSubType            string          `json:"transactionSubType"`
+	TransactionId                 float64         `json:"transactionId"`
+	CashBalanceEffectFlag         bool            `json:"cashBalanceEffectFlag"`
+	Description                   string          `json:"description"`
+	AchStatus                     string          `json:"achStatus"`
+	AccruedInterest               float64         `json:"accruedInterest"`
+	Fees                          string          `json:"fees"`
+	TransactionItem               TransactionItem `json:"transactionItem"`
 }
 
-func InitRepo(a *config.AppConfig) {
-	Repo = &Repository{
-		App: a,
-	}
+type TransactionItem struct {
+	AccountId            int     `json:"accountId"`
+	Amount               float64 `json:"amount"`
+	Price                float64 `json:"price"`
+	Cost                 float64 `json:"cost"`
+	ParentOrderKey       float64 `json:"parentOrderKey"`
+	ParentChildIndicator string  `json:"parentChildIndicator"`
+	Instruction          string  `json:"instruction"`
+	PositionEffect       string  `json:"positionEffect"`
+	Instrument           struct {
+		Symbol               string  `json:"symbol"`
+		UnderlyingSymbol     string  `json:"underlyingSymbol"`
+		OptionExpirationDate string  `json:"optionExpirationDate"`
+		OptionStrikePrice    float64 `json:"optionStrikePrice"`
+		PutCall              string  `json:"putCall"`
+		Cusip                string  `json:"cusip"`
+		Description          string  `json:"description"`
+		AssetType            string  `json:"assetType"`
+		BondMaturityDate     string  `json:"bondMaturityDate"`
+		BondInterestRate     float64 `json:"bondInterestRate"`
+	} `json:"instrument"`
 }
 
 func (r *Repository) getAccounts(c *gin.Context) {
@@ -240,7 +289,7 @@ func (r *Repository) getAccounts(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error creating request: %s", err.Error()))
 	}
 
-	req.Header.Add("Authorization", "Bearer "+tokenClaims.AccessToken)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokenClaims.AccessToken))
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error requesting account information: %s", err.Error()))
@@ -262,13 +311,14 @@ func (r *Repository) getAccounts(c *gin.Context) {
 }
 
 func (r *Repository) getAccount(c *gin.Context) {
-	accountId := c.Param("accountID")
-	tokenString, err := c.Cookie("jwt_td")
+	tokenClaims, err := auth.ValidateCookieJWT("jwt_td", r.App.OAuth, c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
-	tokenClaims, err := auth.ValidateJWT(tokenString, r.App.OAuth)
+
+	accountId := c.Param("accountId")
+
 	//TODO check expiration
 	url := fmt.Sprintf("https://api.tdameritrade.com/v1/accounts/%s?fields=orders,positions", accountId)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -276,7 +326,7 @@ func (r *Repository) getAccount(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error creating request: %s", err.Error()))
 	}
 
-	req.Header.Add("Authorization", "Bearer "+tokenClaims.AccessToken)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokenClaims.AccessToken))
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error requesting account information: %s", err.Error()))
@@ -291,6 +341,87 @@ func (r *Repository) getAccount(c *gin.Context) {
 		return
 	} else {
 		var result Account
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusOK, result)
+		return
+	}
+}
+
+func (r *Repository) getTransactions(c *gin.Context) {
+	tokenClaims, err := auth.ValidateCookieJWT("jwt_td", r.App.OAuth, c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accountId := c.Param("accountId")
+	transType := c.Query("type")
+	startDt := c.Query("startDt")
+	endDt := c.Query("endDt")
+	symbol := c.Query("symbol")
+
+	url := fmt.Sprintf(
+		"https://api.tdameritrade.com/v1/accounts/%s/transactions?type=%s&symbol=%s&startDate=%s&endDate=%s",
+		accountId, transType, symbol, startDt, endDt)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error creating request: %s", err.Error()))
+	}
+
+	fmt.Println(url)
+	fmt.Println(tokenClaims.AccessToken)
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokenClaims.AccessToken))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error requesting account information: %s", err.Error()))
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		var result map[string]string
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusInternalServerError, result)
+		return
+	} else {
+		var result Transactions
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusOK, result)
+		return
+	}
+}
+
+func (r *Repository) getTransaction(c *gin.Context) {
+	tokenClaims, err := auth.ValidateCookieJWT("jwt_td", r.App.OAuth, c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	accountId := c.Param("accountId")
+	transactionId := c.Param("transactionId")
+
+	url := fmt.Sprintf("https://api.tdameritrade.com/v1/accounts/%s/transactions/%s", accountId, transactionId)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error creating request: %s", err.Error()))
+	}
+
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", tokenClaims.AccessToken))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("Error requesting account information: %s", err.Error()))
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if res.StatusCode != http.StatusOK {
+		var result map[string]string
+		_ = json.Unmarshal(body, &result)
+		c.JSON(http.StatusInternalServerError, result)
+		return
+	} else {
+		var result Transaction
 		_ = json.Unmarshal(body, &result)
 		c.JSON(http.StatusOK, result)
 		return

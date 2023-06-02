@@ -156,6 +156,7 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 
 	var result tdTokenResp
 	_ = json.Unmarshal(body, &result)
+	fmt.Println(result)
 
 	tdClaims := CustomClaims{
 		FirstName:          "",
@@ -201,7 +202,7 @@ func (r *Repository) verifyTD(c *gin.Context) {
 }
 
 func (r *Repository) TdRefresh(claims *CustomClaims, c *gin.Context) error {
-	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
+	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token?scope=AccountAccess"
 
 	// Encode body data
 	data := url.Values{}
