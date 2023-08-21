@@ -1,6 +1,6 @@
 import Navigation from "./Navigation";
-import LogIn from "./LogIn";
-import Balances from "./Balances";
+import LogIn from "../../authentication/components/LogIn";
+import Balances from "../../account/components/Balances";
 import {useState} from "react";
 
 export default function Header({activePage, account, balances}) {

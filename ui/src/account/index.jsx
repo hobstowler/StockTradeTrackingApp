@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 
-export default function Account({setActive}) {
+export default function Index({setActive}) {
     useEffect(() => {
         setActive('')
     }, [])

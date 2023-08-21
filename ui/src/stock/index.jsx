@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import StockList from "../components/StockList";
-import StockWatchList from "../components/StockWatchList";
-import KeyIndicators from "../components/KeyIndicators";
-import OpenOrdersModule from "../components/OpenOrdersModule";
-import TransactionHistory from "../components/TransactionHistory";
+import StockList from "./components/StockList";
+import StockWatchList from "./components/StockWatchList";
+import KeyIndicators from "./components/KeyIndicators";
+import OpenOrdersModule from "../orders/components/OpenOrdersModule";
+import TransactionHistory from "../history/components/TransactionHistory";
 
-export default function Stocks({positions, activeAccount, openOrders, setActive}) {
+export default function Index({positions, activeAccount, openOrders, setActive}) {
   const [longStocks, setLongStocks] = useState([])
   const [shortStocks, setShortStocks] = useState([])
   const [activeStock, setActiveStock] = useState([])

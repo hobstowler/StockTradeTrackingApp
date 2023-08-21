@@ -1,22 +1,22 @@
 import logo from './logo.svg';
 import './App.css';
-import Home from "./pages/Home";
-import Header from "./components/Header";
-import Navigation from "./components/Navigation";
+import Home from "./Home";
+import Header from "./shared/components/Header";
+import Navigation from "./shared/components/Navigation";
 
 import {BrowserRouter, Routes, Route, useNavigate} from 'react-router-dom';
-import Footer from "./components/Footer";
-import Watchlist from "./pages/Watchlist";
+import Footer from "./shared/components/Footer";
+import Index from "./watch";
 import {useEffect, useState} from "react";
-import Stocks from "./pages/Stocks";
-import Options from "./pages/Options";
-import Crypto from "./pages/Crypto";
+import Index from "./stock";
+import Index from "./options";
+import Index from "./crypto";
 import {getAccounts, getAccountPositions, getFullAccount, parsePositions} from "./middleware/accounts";
 import {checkAccessCodeExpiry} from "./middleware/misc";
-import Account from "./pages/Account";
-import LogIn from "./components/LogIn";
-import Balances from "./components/Balances";
-import Insight from "./pages/Insight";
+import Index from "./account";
+import LogIn from "./authentication/components/LogIn";
+import Balances from "./account/components/Balances";
+import Index from "./insights";
 
 function App() {
     const [isLoggedIn, setLogIn] = useState(false)
@@ -106,12 +106,12 @@ function App() {
                 <div className='body'>
                     <Routes>
                         <Route path='/' element={<Home setActive={setActive} positions={activePositions} openOrders={openOrders} />} />
-                        <Route path='/stocks' element={<Stocks positions={activePositions} activeAccount={activeAccount} openOrders={openOrders} setActive={setActive} />} />
-                        <Route path='/options' element={<Options positions={activePositions} openOrders={openOrders} setActive={setActive} />} />>
-                        <Route path='/crypto' element={<Crypto setActive={setActive} />} />
-                        <Route path='/watch' element={<Watchlist setActive={setActive} />} />
-                        <Route path='/account' element={<Account setActive={setActive} />} />
-                        <Route path='/insight' element={<Insight setActive={setActive} />} />
+                        <Route path='/stocks' element={<Index positions={activePositions} activeAccount={activeAccount} openOrders={openOrders} setActive={setActive} />} />
+                        <Route path='/options' element={<Index positions={activePositions} openOrders={openOrders} setActive={setActive} />} />>
+                        <Route path='/crypto' element={<Index setActive={setActive} />} />
+                        <Route path='/watch' element={<Index setActive={setActive} />} />
+                        <Route path='/account' element={<Index setActive={setActive} />} />
+                        <Route path='/insight' element={<Index setActive={setActive} />} />
                     </Routes>
                 </div>
                 <Footer />

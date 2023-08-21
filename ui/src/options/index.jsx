@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 
-export default function Options({setActive}) {
+export default function Index({setActive}) {
     useEffect(() => {
         setActive('options')
     }, [])

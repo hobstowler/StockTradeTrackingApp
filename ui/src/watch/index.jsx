@@ -1,6 +1,6 @@
 import React, {useEffect} from 'react';
 
-export default function Watchlist({setActive}) {
+export default function Index({setActive}) {
     useEffect(() => {
         setActive('watch')
     }, [])
