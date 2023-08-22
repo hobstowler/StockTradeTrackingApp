@@ -4,6 +4,8 @@ import StockWatchList from "./components/StockWatchList";
 import KeyIndicators from "./components/KeyIndicators";
 import OpenOrdersModule from "../orders/components/OpenOrdersModule";
 import TransactionHistory from "../history/components/TransactionHistory";
+import {Container} from "@mui/material";
+import Search from "../shared/components/Search";
 
 export default function Index({positions, activeAccount, openOrders}) {
   const [longStocks, setLongStocks] = useState([])
@@ -16,25 +18,8 @@ export default function Index({positions, activeAccount, openOrders}) {
     }, [])
 
     return (
-      <div>
-        <div id='left'>
-          <StockList long={longStocks} short={shortStocks}/>
-        </div>
-        <div id='center'>
-          <OpenOrdersModule openOrders={openOrders}/>
-          <div className='formContainer'>
-            <form id='stockSearchForm'>
-              <input type='text' />
-              <button type='submit'>Search</button>
-              <p>Search for a stock symbol or select from your list of positions on the left or watchlist on the right.</p>
-            </form>
-          </div>
-          <KeyIndicators />
-          <TransactionHistory symbol={symbol} activeAccount={activeAccount} />
-        </div>
-        <div id='right'>
-          <StockWatchList />
-        </div>
-      </div>
+      <Container maxWidth={"md"}>
+        <Search helpText='Search for a stock' />
+      </Container>
     )
 }

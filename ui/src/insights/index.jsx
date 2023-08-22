@@ -1,5 +1,12 @@
-export default function Index() {
-  return(
-    <div></div>
+import {Container} from "@mui/system";
+
+const Index = () => {
+
+  return (
+    <Container>
+
+    </Container>
   )
 }
+
+export default Index;
