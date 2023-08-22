@@ -1,8 +1,7 @@
 import React, {useEffect} from 'react';
 
-export default function Index({setActive}) {
+function Index() {
     useEffect(() => {
-        setActive('watch')
     }, [])
 
     return (
@@ -13,3 +12,5 @@ export default function Index({setActive}) {
         </div>
     )
 }
+
+export default Index;

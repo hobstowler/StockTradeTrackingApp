@@ -1,8 +1,7 @@
 import React, {useEffect} from 'react';
 
-export default function Index({setActive}) {
+export default function Index() {
     useEffect(() => {
-        setActive('crypto')
     }, [])
 
     return (

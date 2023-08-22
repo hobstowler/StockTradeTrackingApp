@@ -5,7 +5,7 @@ import KeyIndicators from "./components/KeyIndicators";
 import OpenOrdersModule from "../orders/components/OpenOrdersModule";
 import TransactionHistory from "../history/components/TransactionHistory";
 
-export default function Index({positions, activeAccount, openOrders, setActive}) {
+export default function Index({positions, activeAccount, openOrders}) {
   const [longStocks, setLongStocks] = useState([])
   const [shortStocks, setShortStocks] = useState([])
   const [activeStock, setActiveStock] = useState([])
@@ -13,7 +13,6 @@ export default function Index({positions, activeAccount, openOrders, setActive})
   const [symbol, setSymbol] = useState("")
 
     useEffect(() => {
-        setActive('stocks')
     }, [])
 
     return (

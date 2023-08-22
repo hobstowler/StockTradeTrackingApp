@@ -1,8 +1,16 @@
-import {useSearchParams, useNavigate, Link} from "react-router-dom";
+import {useSearchParams, useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
-import AccountIcon from "../../account/components/AccountIcon";
+import {Box, Container} from "@mui/system";
+import {Button, Link} from '@mui/material';
+import {useSelector} from "react-redux";
+import {BsFillGearFill} from "react-icons/bs";
+import {grey} from '@mui/material/colors';
 
-export default function LogIn({activeAccount, changeActiveAccount, isLoggedIn, setLogIn, tdConnected, setTdConnected, disconnect}) {
+export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnected, disconnect}) {
+  const user = useSelector((state) => state.user)
+  const isLoggedIn = user.loggedIn
+  const connected = user.connected
+
   const navigate = useNavigate()
 
   const [username, setUsername] = useState("")
@@ -67,24 +75,46 @@ export default function LogIn({activeAccount, changeActiveAccount, isLoggedIn, s
   }
 
   return (
-    <div className='wrapper'>
-      <div className='logIn'>
+    <Container sx={{maxWidth: {sm:"md", md: 'lg'}, mt: "20px"}}>
+      <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        mb: '10px',
+        mr: '30px',
+        textAlign: 'right'
+      }}>
         {
           isLoggedIn ?
-            <div>
-              Logged in as {username} | <div className='accountSettings'><AccountIcon /></div> | <div id='logout' onClick={() => handleLogout()}>Log Out</div><br/>
-              {
-                tdConnected ?
-                  <div>
-                    <div id='tdRegister'>Connected to TD Ameritrade | <span id='tdDisconnect' onClick={disconnect}>Disconnect</span></div>
-                    <div>Active Account: {activeAccount !== undefined ? activeAccount.accountId : ''}</div>
-                  </div> :
-                  <div id='tdRegister'>Authenticate with TD Ameritrade >> <a href="/auth/td_auth"><button>Connect</button></a></div>
+            <Box sx={{display: 'flex', flexDirection: 'row'}}>
+              <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+                {`Logged in as ${username}`}
+              </Box>
+              {connected ?
+                <Button
+                  variant={"outlined"}
+                  onClick={disconnect}
+                  sx={{mx: '5px', px: '8px', py: '1px'}}
+                >
+                  Disconnect
+                </Button> :
+                <Button
+                  variant={"outlined"}
+                  href={"/auth/td_auth"}
+                  sx={{mx: '5px', px: '8px', py: '1px'}}
+                >
+                  Connect
+                </Button>
               }
-            </div> :
-        <a href="/auth/login"><button>{"Log in with Google"}</button></a>}
-        <p>{error}</p>
-      </div>
-    </div>
+              <Button variant={"contained"} sx={{mx: '5px', px: '8px', py: '1px'}} onClick={handleLogout}>Log Out</Button>
+            </Box> :
+            <Button href="/login" variant={"contained"} sx={{px: '8px', py: '1px'}}>
+              {"Log in"}
+            </Button>
+        }
+        <Button href='/account' sx={{fontSize:'20px', px: '8px', ml: '5px', color: grey[700]}}><BsFillGearFill /></Button>
+        {/*<p>{error}</p>*/}
+      </Box>
+    </Container>
   )
 }
