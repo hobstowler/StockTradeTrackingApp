@@ -17,9 +17,11 @@ function Navigation() {
       justifyContent: 'center',
       fontSize: '8vw',
       color: grey[900],
-      mr: '20px',
+      ml: '20px',
       cursor: 'pointer'
-    }}><GiHamburgerMenu/></Box>
+    }}>
+      <GiHamburgerMenu/>
+    </Box>
 
   if (mobileFormat) {
     return mobileNav
