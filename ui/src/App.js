@@ -103,7 +103,8 @@ function App() {
         <Route path='/watch' element={<Watch/>}/>
         <Route path='/account' element={<Account/>}/>
         <Route path='/insight' element={<Insights/>}/>
-        <Route path='/login|register' element={<Authentication/>} />
+        <Route path='/login' element={<Authentication login />} />
+        <Route path='/register' element={<Authentication register />} />
       </Routes>
 
       <Footer/>

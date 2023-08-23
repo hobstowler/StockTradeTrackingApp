@@ -34,21 +34,31 @@ function Navigation() {
       borderTop: {md: '2px solid black'},
       borderBottom: {md: `2px solid ${grey[300]}`},
       justifyContent: {xs: 'center'},
+      '@global': {'a.last-child': {border: '3px solid blue'}}
     }}>
       {navLinks.map((link) => (
         <Link
           sx={{
             "&:hover": {
               color: green[900],
+              borderRight: `1px solid ${grey[200]}`,
+              borderLeft: `1px solid ${grey[200]}`
+            },
+            ':first-child': {
+              '&:hover': {
+                borderLeft: {md:'1px solid transparent'}
+              }
             },
             borderTop: {xs: 'none', sm: `2px solid ${grey[200]}`, md: 'none'},
+            borderRight: '1px solid transparent',
+            borderLeft: '1px solid transparent',
             textDecoration: 'none',
             color: {sm: grey[800], md: green[800]},
             mt: {sm: '10px', md: 0},
             pt: {sm: '4px', md: 0},
             fontWeight: 600,
-            px: '6px',
-            fontSize: '1.3rem',
+            px: '5px',
+            fontSize: '1.1rem',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',

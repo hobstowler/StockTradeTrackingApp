@@ -19,7 +19,7 @@ export default function Index({positions, activeAccount, openOrders}) {
 
     return (
       <Container maxWidth={"md"}>
-        <Search helpText='Search for a stock' />
+        <Search helperText='Search for a stock' />
       </Container>
     )
 }

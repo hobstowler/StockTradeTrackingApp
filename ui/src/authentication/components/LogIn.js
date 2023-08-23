@@ -1,10 +1,11 @@
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
-import {Button, useMediaQuery} from '@mui/material';
+import {Button, Menu, MenuItem, useMediaQuery} from '@mui/material';
 import {useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
+import AccountMenu from "../../account/components/AccountMenu";
 
 export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnected, disconnect}) {
   const theme = useTheme();
@@ -77,6 +78,17 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
     // TODO
   }
 
+  const [anchor, setAnchor] = useState(null)
+
+  const openMenu = (e) => {
+    console.log('ok')
+    setAnchor(e.currentTarget)
+  }
+
+  const closeMenu = () => {
+    setAnchor(null)
+  }
+
   if (mobileFormat) {
     return null
   }
@@ -119,8 +131,13 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
               {"Log in"}
             </Button>
         }
-        <Button href='/account'
-                sx={{fontSize: '20px', px: '8px', ml: '5px', color: grey[700]}}><BsFillGearFill/></Button>
+        <Button
+          onClick={openMenu}
+          sx={{fontSize: '20px', px: '8px', ml: '5px', color: grey[700]}}
+        >
+          <BsFillGearFill/>
+        </Button>
+        <AccountMenu anchor={anchor} onClose={closeMenu} />
         {/*<p>{error}</p>*/}
       </Box>
     </Container>

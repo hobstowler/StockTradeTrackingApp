@@ -6,8 +6,15 @@ import {Box} from "@mui/system";
 
 const Balances = () => {
   const isLoaded = false//useSelect();
+  const user = useSelector((state) => state.user)
+  const isLoggedIn = user.loggedIn
+  const connected = user.connected
   // const isConnected = useSelector();
   // const balances = useSelector();
+
+  if (!isLoggedIn) {
+    return
+  }
 
   if (!isLoaded) {
     return (
