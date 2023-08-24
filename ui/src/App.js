@@ -14,6 +14,7 @@ import {default as Account} from "./account";
 import {default as Authentication} from "./authentication";
 import LogIn from "./authentication/components/LogIn";
 import Balances from "./account/components/Balances";
+import Callback from "./authentication/components/Callback";
 
 function App() {
   const [isLoggedIn, setLogIn] = useState(false)
@@ -104,7 +105,10 @@ function App() {
         <Route path='/account' element={<Account/>}/>
         <Route path='/insight' element={<Insights/>}/>
         <Route path='/login' element={<Authentication login />} />
-        <Route path='/register' element={<Authentication register />} />
+        <Route path='/register'>
+          <Route path='' element={<Authentication />} />
+          <Route path='confirm/:data' element={<Callback />} />
+        </Route>
       </Routes>
 
       <Footer/>
