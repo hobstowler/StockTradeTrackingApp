@@ -1,10 +1,13 @@
 import {Box, Container, Typography} from "@mui/material";
 import RegisterForm from "./components/RegisterForm";
 import LoginForm from "./components/LoginForm";
-import {GithubLoginButton, GoogleLoginButton} from "react-social-login-buttons";
-import {useState} from "react";
+import { FacebookLoginButton, GithubLoginButton, GoogleLoginButton} from "react-social-login-buttons";
+import {useEffect, useState} from "react";
 
 const Authentication = ({ login }) => {
+  useEffect(() => {
+    // TODO check if user is logged in and redirect
+  }, [])
 
   return (
     <Container maxWidth={'md'}>
@@ -14,6 +17,7 @@ const Authentication = ({ login }) => {
             <Typography variant='h5'>{login ? 'Login' : 'Register'} Using...</Typography>
             <GoogleLoginButton />
             <GithubLoginButton />
+            <FacebookLoginButton />
           </Box>
         </Box>
         {login ? <LoginForm /> : <RegisterForm />}

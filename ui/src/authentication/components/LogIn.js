@@ -1,7 +1,8 @@
 import {useNavigate} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
-import {Button, Menu, MenuItem, useMediaQuery} from '@mui/material';
+import {Button, useMediaQuery} from '@mui/material';
+import {Link} from 'react-router-dom'
 import {useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
@@ -64,14 +65,7 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
   }
 
   const handleLogout = () => {
-    fetch('/auth/logout', {method: 'POST'})
-      .then(response => {
-        if (response.status === 200) {
-          setLogIn(false)
-          setUsername('')
-          navigate('/loggedOut')
-        }
-      })
+
   }
 
   const settingScrollOut = () => {
@@ -109,27 +103,17 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
                 {`Logged in as ${username}`}
               </Box>
               {connected ?
-                <Button
-                  variant={"outlined"}
-                  onClick={disconnect}
-                  sx={{mx: '5px', px: '8px', py: '1px'}}
-                >
-                  Disconnect
-                </Button> :
-                <Button
-                  variant={"outlined"}
-                  href={"/auth/td_auth"}
-                  sx={{mx: '5px', px: '8px', py: '1px'}}
-                >
-                  Connect
-                </Button>
+                <Button variant={"outlined"} onClick={disconnect}>Disconnect</Button> :
+                <Link to="/auth/td_auth">
+                  <Button variant="outlined">Connect</Button>
+                </Link>
               }
-              <Button variant={"contained"} sx={{mx: '5px', px: '8px', py: '1px'}} onClick={handleLogout}>Log
+              <Button variant={"contained"} onClick={handleLogout}>Log
                 Out</Button>
             </Box> :
-            <Button href="/login" variant={"contained"} sx={{px: '8px', py: '1px'}}>
-              {"Log in"}
-            </Button>
+            <Link to="/login">
+              <Button variant={"contained"}>Log in</Button>
+            </Link>
         }
         <Button
           onClick={openMenu}

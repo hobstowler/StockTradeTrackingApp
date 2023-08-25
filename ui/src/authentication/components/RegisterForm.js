@@ -1,4 +1,6 @@
-import {Box, Button, Link, TextField, Typography} from "@mui/material";
+import {Box, Button, TextField, Typography} from "@mui/material";
+import {Link} from 'react-router-dom';
+import {registerUser} from "../actions";
 
 const RegisterForm = ({ initialData }) => {
   const handleSubmit = (e) => {
@@ -9,7 +11,8 @@ const RegisterForm = ({ initialData }) => {
       username: e.target.username.value,
       password: e.target.password.value,
       email: e.target.email.value,
-    }
+    };
+    registerUser(data);
   }
 
   return (
@@ -24,9 +27,9 @@ const RegisterForm = ({ initialData }) => {
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Email' size='small' type='email' name='email' />
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Username' size='small' name='username' />
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Password' size='small' type='password' name='password' />
-          <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '10px'}}>
-            <Button href='/login' sx={{textDecoration: 'none'}}>Have an Account?</Button>
-            <Button sx={{width: '100px'}} variant='contained' type='submit'>Log In</Button>
+          <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px'}}>
+            <Link to='/login'><Button sx={{textDecoration: 'none'}}>Have an Account?</Button></Link>
+            <Button variant='contained' type='submit'>Log In</Button>
           </Box>
         </Box>
       </form>

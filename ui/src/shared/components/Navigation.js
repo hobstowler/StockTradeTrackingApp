@@ -34,17 +34,17 @@ function Navigation() {
       borderTop: {md: '2px solid black'},
       borderBottom: {md: `2px solid ${grey[300]}`},
       justifyContent: {xs: 'center'},
-      '@global': {'a.last-child': {border: '3px solid blue'}}
     }}>
-      {navLinks.map((link) => (
+      {navLinks.map((link, i) => (
         <Link
+          key={i}
           sx={{
             "&:hover": {
               color: green[900],
               borderRight: `1px solid ${grey[200]}`,
               borderLeft: `1px solid ${grey[200]}`
             },
-            ':first-child': {
+            ':first-of-type': {
               '&:hover': {
                 borderLeft: {md:'1px solid transparent'}
               }

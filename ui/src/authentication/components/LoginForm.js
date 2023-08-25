@@ -1,4 +1,5 @@
 import {Box, Button, Link, TextField, Typography} from "@mui/material";
+import {loginUser} from "../actions";
 
 const LoginForm = ({ swap = () => {} }) => {
   const handleSubmit = (e) => {
@@ -6,8 +7,8 @@ const LoginForm = ({ swap = () => {} }) => {
     const data = {
       username: e.target.username.value,
       password: e.target.password.value
-    }
-    // TODO post data
+    };
+    loginUser(data);
   }
 
   return (
@@ -17,9 +18,9 @@ const LoginForm = ({ swap = () => {} }) => {
           <Typography variant='h5'>...or Log In with us</Typography>
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Username' size='small' name='username'></TextField>
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Password' size='small' type='password' name='password'></TextField>
-          <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: '10px'}}>
+          <Box sx={{display: 'flex', flexDirection: 'column-reverse', justifyContent: 'center', gap: '10px'}}>
             <Button href='/register' sx={{textDecoration: 'none'}}>New User?</Button>
-            <Button sx={{width: '100px'}} variant='contained' type='submit'>Log In</Button>
+            <Button variant='contained' type='submit'>Log In</Button>
           </Box>
         </Box>
       </form>
