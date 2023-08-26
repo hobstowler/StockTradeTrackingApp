@@ -17,64 +17,11 @@ import Balances from "./account/components/Balances";
 import Callback from "./authentication/components/Callback";
 
 function App() {
-  const [isLoggedIn, setLogIn] = useState(false)
   const [tdConnected, setTdConnected] = useState(false)
 
-  const [activePage, setActive] = useState('home')
-  const [accounts, updateAccounts] = useState([])
   const [activeAccount, setActiveAccount] = useState({})
   const [activePositions, updateActivePositions] = useState([])
   const [openOrders, updateOpenOrders] = useState([])
-  const [activeAccountOverride, setActiveAccountOverride] = useState(false)
-  const [currentBalances, setCurrentBalances] = useState({})
-  const [balances, updateBalances] = useState({})
-  const [initialBalances, updateInitialBalances] = useState({})
-
-  useEffect(() => {
-    getAccount()
-    const interval = setInterval(() => {
-      getAccount()
-    }, 1000 * 60 * 5)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  useEffect(() => {
-    if (activeAccount === undefined) {
-      updateActivePositions([])
-      updateOpenOrders([])
-      return
-    }
-
-    if (activeAccount.positions !== undefined) {
-      updateActivePositions(activeAccount.positions || undefined)
-    }
-    if (activeAccount.orderStrategies !== undefined) {
-      updateOpenOrders(activeAccount.orderStrategies || undefined)
-    }
-  }, [activeAccount])
-
-  const getAccount = () => {
-    fetch('/account/')
-      .then(async response => {
-        const hasJson = response.headers.get('content-type')?.includes('application/json')
-        const data = hasJson ? await response.json() : null
-
-        if (!response.ok) {
-          let error = (data && data.error) || response.status
-          return Promise.reject(error)
-        }
-
-        updateAccounts(data)
-        if (activeAccountOverride === false) {
-          setActiveAccount(data[0].securitiesAccount)
-        }
-      })
-  }
-
-  const changeActiveAccount = (accountId) => {
-
-  }
 
   const disconnect = () => {
     fetch('/auth/disconnect', {

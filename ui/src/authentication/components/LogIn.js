@@ -13,8 +13,8 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
   const mobileFormat = !useMediaQuery(theme.breakpoints.up('sm'));
 
   const user = useSelector((state) => state.user)
-  const isLoggedIn = user.loggedIn
-  const connected = user.connected
+  const isLoggedIn = user?.isLoggedIn
+  const connected = user?.isConnected
 
   const navigate = useNavigate()
 

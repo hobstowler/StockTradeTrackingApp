@@ -61,6 +61,20 @@ export const logout =
       })
 }
 
+export const disconnect =
+  () =>
+  (dispatch, state, _) => {
+    dispatch({type: 'user_disconnect_requested'})
+
+    fetch('/auth/disconnect', {method: 'POST'})
+      .then(response => {
+        if (response.status === 302 || response.status === 200) {
+          setTdConnected(false)
+          // TODO other logout-related tasks
+        }
+      })
+}
+
 export const tdVerify = () => {
 
 }
