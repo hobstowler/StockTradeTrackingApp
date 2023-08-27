@@ -1,5 +1,10 @@
 const initialState = {
-  username: 'test user',
+  user: {
+    firstName: 'test',
+    lastName: 'mctesterson',
+    email: 'testEmail@emailer.xyz',
+    username: 'test user',
+  },
   status: {
     isConnected: false,
     isLoaded: true,
@@ -34,6 +39,12 @@ const reducer = (state = initialState, action) => {
         status: updateStatus(state.status, action),
       };
     case 'td_auth_requested':
+    case 'td_verify_requested':
+    case 'td_auth_failed':
+    case 'td_verify_failed':
+      return {...state, status: {...state.status, isConnected: false}}
+    case 'td_auth_completed':
+    case 'td_verify_completed':
       return {...state, status: {...state.status, isConnected: true}}
     default:
       return state

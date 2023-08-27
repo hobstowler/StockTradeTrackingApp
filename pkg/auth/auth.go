@@ -64,6 +64,11 @@ type tdVerifyResp struct {
 	Error string `json:"error"`
 }
 
+type GenericResp struct {
+	Redirect string `json:"redirect"`
+	Error    string `json:"error"`
+}
+
 // Logs a user in either by redirecting them to the OAuth service or by using a valid JWT passed in the request.
 func (r *Repository) login(c *gin.Context) {
 	tokenString, _ := c.Cookie("ugly_jwt")
@@ -127,12 +132,11 @@ func (r *Repository) register(c *gin.Context) {
 
 func (r *Repository) disconnect(c *gin.Context) {
 	c.SetCookie("jwt_td", "", -1, "/", c.Request.URL.Host, false, false)
-	c.Redirect(http.StatusFound, "/")
-}
-
-type TDAuthResp struct {
-	Redirect string `json:"redirect"`
-	Error    string `json:"error"`
+	disconnectResp := GenericResp{
+		Redirect: "/",
+		Error:    "",
+	}
+	c.JSON(http.StatusOK, disconnectResp)
 }
 
 func (r *Repository) tdAuth(c *gin.Context) {
@@ -143,7 +147,7 @@ func (r *Repository) tdAuth(c *gin.Context) {
 	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "http://"+reqUrl))
 	tdUrlBuilder.WriteString(fmt.Sprintf("&client_id=%s@AMER.OAUTHAP", r.App.TdApi))
 	tdUrl := tdUrlBuilder.String()
-	tdAuthResp := TDAuthResp{
+	tdAuthResp := GenericResp{
 		Redirect: tdUrl,
 	}
 	c.JSON(http.StatusOK, tdAuthResp)

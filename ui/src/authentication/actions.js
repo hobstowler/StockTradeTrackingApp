@@ -17,6 +17,7 @@ export const loginUser =
         if (!response.ok) {
           let error = (json && json.error) || response.status
           dispatch({type: 'user_login_failure', error: error})
+          return
         }
 
         dispatch({type: 'user_login_completed', ...json})
@@ -50,7 +51,7 @@ export const registerUser =
       })
 }
 
-export const logout =
+export const logoutUser =
   (data) =>
   (dispatch, state, _) => {
     dispatch({type: 'user_logout_requested'})
@@ -74,6 +75,7 @@ export const logout =
 export const disconnect =
   () =>
   (dispatch, state, _) => {
+  console.log('disc')
     dispatch({type: 'user_disconnect_requested'})
 
     fetch('/auth/disconnect', {method: 'POST'})
@@ -83,8 +85,11 @@ export const disconnect =
 
         if (!response.ok) {
           let error = (json && json.error) || response.status
-          console.log(error)
+          dispatch({type: 'user_disconnect_failed', error: error})
+          return
         }
+
+        window.location.href = json.redirect ? json.redirect : '/'
       })
 }
 
@@ -92,7 +97,7 @@ export const tdConnect =
   () =>
   (dispatch, state, _) => {
   dispatch({type: 'td_connect_requested'})
-    console.log(`/auth/td_auth?url=${window.location.host}`)
+
   fetch(`/auth/td_auth?url=${window.location.host}`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
@@ -101,12 +106,10 @@ export const tdConnect =
       if (!response.ok) {
         let error = (json && json.error) || response.status
         dispatch({type: 'td_connect_failed', error: error})
+        return
       }
 
-      if (json.redirect) {
-        window.location.href = json.redirect
-      }
-      dispatch({type: 'td_connect_no_redirect'})
+      window.location.href = json.redirect ? json.redirect : '/'
     })
 }
 
@@ -122,16 +125,18 @@ export const tdReturnAuth = (code) =>
       if (!response.ok) {
         let error = (json && json.error) || response.status
         dispatch({type: 'td_auth_failed', error: error})
+        return
       }
 
       dispatch({type: 'td_auth_completed'})
-      // window.location.href = '/'
+      window.location.href = '/'
     })
 }
 
 export const tdVerify = () =>
   (dispatch, state, _) => {
   dispatch({ type: 'td_verify_requested'})
+
   fetch('/auth/verify_td')
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
@@ -139,7 +144,8 @@ export const tdVerify = () =>
 
       if (!response.ok) {
         let error = (data && data.error) || response.status
-        dispatch({ type: 'td_verify_failed' })
+        dispatch({ type: 'td_verify_failed', error: error })
+        return
       }
 
       dispatch({ type: 'td_verify_completed' })

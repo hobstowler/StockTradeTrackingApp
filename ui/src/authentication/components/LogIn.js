@@ -1,20 +1,19 @@
-import {useNavigate} from "react-router-dom";
+import {Link} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
 import {Button, useMediaQuery} from '@mui/material';
-import {Link} from 'react-router-dom'
 import {useDispatch, useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
 import AccountMenu from "../../account/components/AccountMenu";
-import {loginUser} from "../actions";
-import {disconnect, tdConnect, tdVerify} from "../actions"
+import {disconnect, loginUser, logoutUser, tdConnect, tdVerify} from "../actions";
+import {PulseLoader} from "react-spinners";
 
 export default function LogIn() {
   const dispatch = useDispatch();
   const theme = useTheme();
-  const user = useSelector(({authentication}) => authentication)
-  const status = user?.status
+  const user = useSelector(({authentication}) => authentication?.user)
+  const status = useSelector(({authentication}) => authentication?.status)
   const isLoggedIn = status?.isLoggedIn
   const isConnected = status?.isConnected
 
@@ -34,14 +33,6 @@ export default function LogIn() {
       dispatch(tdVerify())
     }
   }, [isLoggedIn])
-
-  const handleLogout = () => {
-
-  }
-
-  const settingScrollOut = () => {
-    // TODO
-  }
 
   const [anchor, setAnchor] = useState(null)
 
@@ -74,11 +65,16 @@ export default function LogIn() {
                 {`Logged in as ${user?.username}`}
               </Box>
               {isConnected ?
-                <Button sx={{ml: '10px'}} variant={"outlined"} onClick={() => dispatch(disconnect)}>Disconnect</Button> :
-                <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="outlined">Connect</Button>
+                <Button sx={{ml: '10px'}} variant={"outlined"} disabled={status?.processing}
+                        onClick={() => dispatch(disconnect())}>
+                  {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Disconnect'}
+                </Button> :
+                <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="outlined">
+                  {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Connect'}
+                </Button>
               }
-              <Button sx={{ml: '10px'}} variant={"contained"} onClick={handleLogout}>Log
-                Out</Button>
+              <Button sx={{ml: '10px'}} variant={"contained"} onClick={() => dispatch(logoutUser())}>
+                {status?.processing ? <PulseLoader size={12} color='white'/> : 'Log Out'}</Button>
             </Box> :
             <Link to="/login">
               <Button variant={"contained"}>Log in</Button>
@@ -90,7 +86,7 @@ export default function LogIn() {
         >
           <BsFillGearFill/>
         </Button>
-        <AccountMenu anchor={anchor} onClose={closeMenu} />
+        <AccountMenu anchor={anchor} onClose={closeMenu}/>
         {/*<p>{error}</p>*/}
       </Box>
     </Container>
