@@ -115,21 +115,32 @@ export const tdConnect =
 }
 
 export const tdGetToken = (code) =>
-  (dispatch, state, _) => {
-  fetch("https://api.tdameritrade.com/v1/oauth2/token", {
+  async (dispatch, state, _) => {
+
+  const body = {
+    "grant_type": "authorization_code",
+    "access_type": "offline",
+    "code": code,
+    "client_id": "WKARA9UYSUE8NO3FQMXCSGE5HSNG5RML",
+    "redirect_uri": `https://${window.location.host}/auth/td_return_auth`,
+  }
+  let formBody = []
+  for (const property in body) {
+    const encodedKey = encodeURIComponent(property)
+    const encodedValue = encodeURIComponent(body[property])
+    formBody.push(`${encodedKey}=${encodedValue}`)
+  }
+  formBody = formBody.join('&')
+
+  const token = await fetch("https://api.tdameritrade.com/v1/oauth2/token", {
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
     },
-    body: {
-      "grant_type": "authorization_code",
-      "access_type": "offline",
-      "code": code,
-      "client_id": r.App.TdApi,
-      "redirect_uri": "https://"+c.Request.Host+"/auth/td_return_auth",
-    }
-  })
+    body: formBody
+  }).then(response => response.json())
 
-  }
+  console.log(token)
+}
 
 export const tdReturnAuth = (code) =>
   (dispatch, state, _) => {
