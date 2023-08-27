@@ -22,17 +22,25 @@ import (
 	"time"
 )
 
-var Repo *Repository
-
 type Repository struct {
 	App *config.AppConfig
+}
+
+var Repo *Repository
+
+func InitRepo(a *config.AppConfig) {
+	Repo = &Repository{
+		App: a,
+	}
 }
 
 func Routes(g *gin.Engine) {
 	auth := g.Group("/auth")
 
-	auth.GET("/login", Repo.login)
+	auth.POST("/login", Repo.login)
+	auth.POST("/provider/login/:provider", Repo.providerLogin)
 	auth.POST("/logout", Repo.logout)
+	auth.POST("/register", Repo.register)
 	auth.GET("/oauth", Repo.oAuth)
 	auth.GET("/return_auth", Repo.returnAuth)
 	auth.GET("/td_auth", Repo.tdAuth)
@@ -42,19 +50,16 @@ func Routes(g *gin.Engine) {
 	auth.GET("/verify_td", Repo.verifyTD)
 }
 
-func InitRepo(a *config.AppConfig) {
-	Repo = &Repository{
-		App: a,
-	}
+type LoginResp struct {
+	Username   string `json:"username"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	IsLoggedIn bool   `json:"isLoggedIn"`
+	Redirect   string `json:"redirect"`
+	Error      string `json:"error"`
 }
 
-type LoginRes struct {
-	Username string `json:"username"`
-	LoggedIn bool   `json:"loggedIn"`
-	Error    string `json:"error"`
-}
-
-type tdVerifyRes struct {
+type tdVerifyResp struct {
 	Valid bool   `json:"valid"`
 	Error string `json:"error"`
 }
@@ -68,6 +73,10 @@ func (r *Repository) login(c *gin.Context) {
 	}
 	//c.Request.Method = http.MethodGet
 	c.Redirect(http.StatusFound, "/auth/oauth")
+}
+
+func (r *Repository) providerLogin(c *gin.Context) {
+	c.JSON(http.StatusOK, "not implemented")
 }
 
 // Logs a user in with their valid JWT.
@@ -92,9 +101,11 @@ func (r *Repository) loginWithJWT(tokenString string, c *gin.Context) {
 		}
 	}
 
-	loginResp := LoginRes{
-		Username: fmt.Sprintf("%s %s", f_name, l_name),
-		LoggedIn: true,
+	loginResp := LoginResp{
+		Username:   fmt.Sprintf("%s %s", f_name, l_name),
+		FirstName:  f_name,
+		LastName:   l_name,
+		IsLoggedIn: true,
 	}
 	c.JSON(200, loginResp)
 }
@@ -106,19 +117,36 @@ func (r *Repository) logout(c *gin.Context) {
 	c.Redirect(http.StatusFound, "/")
 }
 
+func (r *Repository) register(c *gin.Context) {
+	loginResp := LoginResp{
+		Username:   "test",
+		IsLoggedIn: true,
+	}
+	c.JSON(200, loginResp)
+}
+
 func (r *Repository) disconnect(c *gin.Context) {
 	c.SetCookie("jwt_td", "", -1, "/", c.Request.URL.Host, false, false)
 	c.Redirect(http.StatusFound, "/")
 }
 
+type TDAuthResp struct {
+	Redirect string `json:"redirect"`
+	Error    string `json:"error"`
+}
+
 func (r *Repository) tdAuth(c *gin.Context) {
+	reqUrl := c.Query("url")
 	tdUrlBuilder := strings.Builder{}
 	tdUrlBuilder.WriteString("https://auth.tdameritrade.com/auth")
 	tdUrlBuilder.WriteString("?response_type=code&redirect_uri=")
-	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "https://"+c.Request.Host))
+	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "http://"+reqUrl))
 	tdUrlBuilder.WriteString(fmt.Sprintf("&client_id=%s@AMER.OAUTHAP", r.App.TdApi))
 	tdUrl := tdUrlBuilder.String()
-	c.Redirect(http.StatusFound, tdUrl)
+	tdAuthResp := TDAuthResp{
+		Redirect: tdUrl,
+	}
+	c.JSON(http.StatusOK, tdAuthResp)
 }
 
 type tdTokenResp struct {
@@ -188,7 +216,7 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 
 func (r *Repository) verifyTD(c *gin.Context) {
 	tokenString, _ := c.Cookie("jwt_td")
-	resp := tdVerifyRes{
+	resp := tdVerifyResp{
 		Valid: false,
 		Error: "",
 	}

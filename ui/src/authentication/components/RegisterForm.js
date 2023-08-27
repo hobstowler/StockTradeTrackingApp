@@ -1,18 +1,20 @@
 import {Box, Button, TextField, Typography} from "@mui/material";
 import {Link} from 'react-router-dom';
-import {registerUser} from "../actions";
+import {registerUser, testDisp} from "../actions";
+import {useDispatch} from "react-redux";
 
 const RegisterForm = ({ initialData }) => {
+  const dispatch = useDispatch()
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
       firstName: e.target.firstName.value,
       lastName: e.target.lastName.value,
-      username: e.target.username.value,
       password: e.target.password.value,
       email: e.target.email.value,
     };
-    registerUser(data);
+    dispatch(registerUser(data));
   }
 
   return (
@@ -25,11 +27,10 @@ const RegisterForm = ({ initialData }) => {
             <TextField sx={{maxWidth: {md: '145px'}}} variant='outlined' label='Last Name' size='small' name='lastName'/>
           </Box>
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Email' size='small' type='email' name='email' />
-          <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Username' size='small' name='username' />
           <TextField sx={{width: {md: '300px'}}} variant='outlined' label='Password' size='small' type='password' name='password' />
           <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '10px'}}>
             <Link to='/login'><Button sx={{textDecoration: 'none'}}>Have an Account?</Button></Link>
-            <Button variant='contained' type='submit'>Log In</Button>
+            <Button variant='contained' type='submit'>Register</Button>
           </Box>
         </Box>
       </form>

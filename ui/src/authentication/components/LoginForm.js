@@ -1,14 +1,17 @@
 import {Box, Button, Link, TextField, Typography} from "@mui/material";
 import {loginUser} from "../actions";
+import {useDispatch} from "react-redux";
 
 const LoginForm = ({ swap = () => {} }) => {
+  const dispatch = useDispatch()
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
       username: e.target.username.value,
       password: e.target.password.value
     };
-    loginUser(data);
+    dispatch(loginUser(data));
   }
 
   return (

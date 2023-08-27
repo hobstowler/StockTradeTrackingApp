@@ -3,23 +3,20 @@ import {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
 import {Button, useMediaQuery} from '@mui/material';
 import {Link} from 'react-router-dom'
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
 import AccountMenu from "../../account/components/AccountMenu";
+import {loginUser} from "../actions";
+import {disconnect, tdConnect, tdVerify} from "../actions"
 
-export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnected, disconnect}) {
+export default function LogIn() {
+  const dispatch = useDispatch();
   const theme = useTheme();
-  const mobileFormat = !useMediaQuery(theme.breakpoints.up('sm'));
-
-  const user = useSelector((state) => state.user)
-  const isLoggedIn = user?.isLoggedIn
-  const connected = user?.isConnected
-
-  const navigate = useNavigate()
-
-  const [username, setUsername] = useState("")
-  const [error, setError] = useState('')
+  const user = useSelector(({authentication}) => authentication)
+  const status = user?.status
+  const isLoggedIn = status?.isLoggedIn
+  const isConnected = status?.isConnected
 
   const cookieValue = (val) => document.cookie
     .split('; ')
@@ -28,41 +25,15 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
 
   useEffect(() => {
     if (cookieValue("ugly_jwt") !== undefined) {
-      fetch("/auth/login", {method: "GET"})
-        .then(async response => {
-          const hasJson = response.headers.get('content-type')?.includes('application/json')
-          const data = hasJson ? await response.json() : null
-
-          if (!response.ok) {
-            let error = (data && data.error) || response.status
-            return Promise.reject(error)
-          }
-
-          setLogIn(data.loggedIn)
-          setUsername(data.username)
-        })
+      loginUser()
     }
   }, [])
 
   useEffect(() => {
-    tdVerify()
+    if (isLoggedIn) {
+      dispatch(tdVerify())
+    }
   }, [isLoggedIn])
-
-  const tdVerify = () => {
-    fetch('/auth/verify_td')
-      .then(async response => {
-        const hasJson = response.headers.get('content-type')?.includes('application/json')
-        const data = hasJson ? await response.json() : null
-
-        if (!response.ok) {
-          let error = (data && data.error) || response.status
-          return Promise.reject(error)
-        }
-
-        setTdConnected(data.valid)
-        setError(data.error)
-      })
-  }
 
   const handleLogout = () => {
 
@@ -83,7 +54,7 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
     setAnchor(null)
   }
 
-  if (mobileFormat) {
+  if (!useMediaQuery(theme.breakpoints.up('sm'))) {
     return null
   }
   return (
@@ -100,15 +71,13 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
           isLoggedIn ?
             <Box sx={{display: 'flex', flexDirection: 'row'}}>
               <Box sx={{display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-                {`Logged in as ${username}`}
+                {`Logged in as ${user?.username}`}
               </Box>
-              {connected ?
-                <Button variant={"outlined"} onClick={disconnect}>Disconnect</Button> :
-                <Link to="/auth/td_auth">
-                  <Button variant="outlined">Connect</Button>
-                </Link>
+              {isConnected ?
+                <Button sx={{ml: '10px'}} variant={"outlined"} onClick={() => dispatch(disconnect)}>Disconnect</Button> :
+                <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="outlined">Connect</Button>
               }
-              <Button variant={"contained"} onClick={handleLogout}>Log
+              <Button sx={{ml: '10px'}} variant={"contained"} onClick={handleLogout}>Log
                 Out</Button>
             </Box> :
             <Link to="/login">
@@ -117,7 +86,7 @@ export default function LogIn({activeAccount, setLogIn, tdConnected, setTdConnec
         }
         <Button
           onClick={openMenu}
-          sx={{fontSize: '20px', px: '8px', ml: '5px', color: grey[700]}}
+          sx={{fontSize: '20px', px: '8px', ml: '10px', color: grey[700]}}
         >
           <BsFillGearFill/>
         </Button>

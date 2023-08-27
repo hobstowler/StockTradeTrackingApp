@@ -1,7 +1,9 @@
 const initialState = {
+  username: 'test user',
   status: {
+    isConnected: false,
     isLoaded: true,
-    isLoggedIn: false,
+    isLoggedIn: true,
     processing: false,
   }
 }
@@ -31,6 +33,8 @@ const reducer = (state = initialState, action) => {
         ...state,
         status: updateStatus(state.status, action),
       };
+    case 'td_auth_requested':
+      return {...state, status: {...state.status, isConnected: true}}
     default:
       return state
   }

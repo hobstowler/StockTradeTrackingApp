@@ -3,8 +3,8 @@ import {Menu, MenuItem} from "@mui/material";
 
 const AccountMenu = ({ anchor, onClose }) => {
   const user = useSelector((state) => state.user)
-  const isLoggedIn = user.loggedIn
-  const connected = user.connected
+  const isLoggedIn = user?.isLoggedIn
+  const isConnected = user?.isConnected
 
   return (
     <Menu

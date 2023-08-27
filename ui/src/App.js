@@ -15,6 +15,7 @@ import {default as Authentication} from "./authentication";
 import LogIn from "./authentication/components/LogIn";
 import Balances from "./account/components/Balances";
 import Callback from "./authentication/components/Callback";
+import ReturnAuth from "./authentication/components/ReturnAuth";
 
 function App() {
   const [tdConnected, setTdConnected] = useState(false)
@@ -55,6 +56,10 @@ function App() {
         <Route path='/register'>
           <Route path='' element={<Authentication />} />
           <Route path='confirm/:data' element={<Callback />} />
+        </Route>
+        <Route path='/auth'>
+          <Route path='td_return_auth' element={<ReturnAuth provider='td'/>}/>
+          <Route path='google_return_auth' element={<ReturnAuth provider='google'/>}/>
         </Route>
       </Routes>
 

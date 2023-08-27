@@ -10,24 +10,34 @@ export const loginUser =
       },
       body: data,
     })
-      .then(response => response.json())
-      .then(json => {
+      .then(async response => {
+        const hasJson = response.headers.get('content-type')?.includes('application/json')
+        const json = hasJson ? await response.json() : null
+
+        if (!response.ok) {
+          let error = (json && json.error) || response.status
+          dispatch({type: 'user_login_failure', error: error})
+        }
+
         dispatch({type: 'user_login_completed', ...json})
       })
-      .catch(error => {
-        dispatch({type: 'user_login_failure', error: error})
-      })
+}
+
+export const testDisp = () => {
+  console.log('test')
 }
 
 export const registerUser =
   (data) =>
   (dispatch, state, _) => {
     dispatch({type: 'user_registration_requested'})
+    console.log('registering')
 
     fetch('/auth/register', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': 'true'
       },
       body: data,
     })
@@ -67,16 +77,73 @@ export const disconnect =
     dispatch({type: 'user_disconnect_requested'})
 
     fetch('/auth/disconnect', {method: 'POST'})
-      .then(response => {
-        if (response.status === 302 || response.status === 200) {
-          setTdConnected(false)
-          // TODO other logout-related tasks
+      .then(async response => {
+        const hasJson = response.headers.get('content-type')?.includes('application/json')
+        const json = hasJson ? await response.json() : null
+
+        if (!response.ok) {
+          let error = (json && json.error) || response.status
+          console.log(error)
         }
       })
 }
 
-export const tdVerify = () => {
+export const tdConnect =
+  () =>
+  (dispatch, state, _) => {
+  dispatch({type: 'td_connect_requested'})
+    console.log(`/auth/td_auth?url=${window.location.host}`)
+  fetch(`/auth/td_auth?url=${window.location.host}`)
+    .then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const json = hasJson ? await response.json() : null
 
+      if (!response.ok) {
+        let error = (json && json.error) || response.status
+        dispatch({type: 'td_connect_failed', error: error})
+      }
+
+      if (json.redirect) {
+        window.location.href = json.redirect
+      }
+      dispatch({type: 'td_connect_no_redirect'})
+    })
+}
+
+export const tdReturnAuth = (code) =>
+  (dispatch, state, _) => {
+  dispatch({type: 'td_auth_requested'})
+
+  fetch(`/auth/td_return_auth?code=${code}`)
+    .then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const json = hasJson ? await response.json() : null
+
+      if (!response.ok) {
+        let error = (json && json.error) || response.status
+        dispatch({type: 'td_auth_failed', error: error})
+      }
+
+      dispatch({type: 'td_auth_completed'})
+      // window.location.href = '/'
+    })
+}
+
+export const tdVerify = () =>
+  (dispatch, state, _) => {
+  dispatch({ type: 'td_verify_requested'})
+  fetch('/auth/verify_td')
+    .then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const data = hasJson ? await response.json() : null
+
+      if (!response.ok) {
+        let error = (data && data.error) || response.status
+        dispatch({ type: 'td_verify_failed' })
+      }
+
+      dispatch({ type: 'td_verify_completed' })
+    })
 }
 
 export const refreshAuth = () => {
