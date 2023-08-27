@@ -5,6 +5,7 @@ import {tdReturnAuth} from "../actions";
 const ReturnAuth = ({provider}) => {
   const dispatch = useDispatch()
   const code = new URLSearchParams(useLocation().search).get('code')
+  console.log(code)
 
   if (provider === 'td') {
     dispatch(tdReturnAuth(code))

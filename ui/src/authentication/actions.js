@@ -1,3 +1,5 @@
+import {display} from "@mui/system";
+
 export const loginUser =
   (data) =>
   (dispatch, state, _) => {
@@ -75,7 +77,6 @@ export const logoutUser =
 export const disconnect =
   () =>
   (dispatch, state, _) => {
-  console.log('disc')
     dispatch({type: 'user_disconnect_requested'})
 
     fetch('/auth/disconnect', {method: 'POST'})
@@ -112,6 +113,23 @@ export const tdConnect =
       window.location.href = json.redirect ? json.redirect : '/'
     })
 }
+
+export const tdGetToken = (code) =>
+  (dispatch, state, _) => {
+  fetch("https://api.tdameritrade.com/v1/oauth2/token", {
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: {
+      "grant_type": "authorization_code",
+      "access_type": "offline",
+      "code": code,
+      "client_id": r.App.TdApi,
+      "redirect_uri": "https://"+c.Request.Host+"/auth/td_return_auth",
+    }
+  })
+
+  }
 
 export const tdReturnAuth = (code) =>
   (dispatch, state, _) => {
