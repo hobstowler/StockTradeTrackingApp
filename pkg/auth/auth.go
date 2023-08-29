@@ -44,7 +44,7 @@ func Routes(g *gin.Engine) {
 	auth.GET("/oauth", Repo.oAuth)
 	auth.GET("/return_auth", Repo.returnAuth)
 	auth.GET("/td_auth", Repo.tdAuth)
-	auth.GET("/td_return_auth", Repo.tdReturnAuth)
+	auth.POST("/td_push_token", Repo.tdPushToken)
 	auth.POST("/disconnect", Repo.disconnect)
 	//auth.GET("/td_refresh_auth", Repo.tdRefresh)
 	auth.GET("/verify_td", Repo.verifyTD)
@@ -144,7 +144,7 @@ func (r *Repository) tdAuth(c *gin.Context) {
 	tdUrlBuilder := strings.Builder{}
 	tdUrlBuilder.WriteString("https://auth.tdameritrade.com/auth")
 	tdUrlBuilder.WriteString("?response_type=code&redirect_uri=")
-	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "http://"+reqUrl))
+	tdUrlBuilder.WriteString(fmt.Sprintf("%s/auth/td_return_auth", "https://"+reqUrl))
 	tdUrlBuilder.WriteString(fmt.Sprintf("&client_id=%s@AMER.OAUTHAP", r.App.TdApi))
 	tdUrl := tdUrlBuilder.String()
 	tdAuthResp := GenericResp{
@@ -162,48 +162,23 @@ type tdTokenResp struct {
 	RefreshTokenExpiresIn int    `json:"refresh_token_expires_in"`
 }
 
-func (r *Repository) tdReturnAuth(c *gin.Context) {
-	code := c.Query("code")
-	tokenUrl := "https://api.tdameritrade.com/v1/oauth2/token"
-
-	// Encode body data
-	data := url.Values{}
-	data.Set("grant_type", "authorization_code")
-	data.Set("access_type", "offline")
-	data.Set("code", code)
-	data.Set("client_id", r.App.TdApi)
-	data.Set("redirect_uri", "https://"+c.Request.Host+"/auth/td_return_auth")
-	encodedData := data.Encode()
-
-	// Create request and set headers
-	req, err := http.NewRequest(http.MethodPost, tokenUrl, strings.NewReader(encodedData))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, "Error creating request")
-	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	// Make token request to TD Ameritrade
-	res, err := http.DefaultClient.Do(req)
-	defer res.Body.Close()
-
-	// TODO handle a bad response here
-	// Read in body from TD
-	body, err := io.ReadAll(res.Body)
+func (r *Repository) tdPushToken(c *gin.Context) {
+	var tdToken tdTokenResp
+	err := c.Bind(&tdToken)
 	if err != nil {
 		panic(err)
 	}
 
-	var result tdTokenResp
-	_ = json.Unmarshal(body, &result)
+	fmt.Println(tdToken)
 
 	tdClaims := CustomClaims{
 		FirstName:          "",
 		LastName:           "",
 		Sub:                "",
-		AccessToken:        result.AccessToken,
-		AccessTokenExpiry:  result.ExpiresIn,
-		RefreshToken:       result.RefreshToken,
-		RefreshTokenExpiry: result.RefreshTokenExpiresIn,
+		AccessToken:        tdToken.AccessToken,
+		AccessTokenExpiry:  tdToken.ExpiresIn,
+		RefreshToken:       tdToken.RefreshToken,
+		RefreshTokenExpiry: tdToken.RefreshTokenExpiresIn,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "UglyTradingApp",
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -214,8 +189,8 @@ func (r *Repository) tdReturnAuth(c *gin.Context) {
 	jwtString, err := GenerateJWT(tdClaims, r.App.OAuth)
 
 	// Set cookies and redirect back to main page
-	c.SetCookie("jwt_td", jwtString, result.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, true)
-	c.Redirect(http.StatusFound, "/")
+	c.SetCookie("jwt_td", jwtString, tdToken.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, true)
+	c.JSON(http.StatusOK, "")
 }
 
 func (r *Repository) verifyTD(c *gin.Context) {

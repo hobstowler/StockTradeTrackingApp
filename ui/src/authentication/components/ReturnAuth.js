@@ -1,14 +1,13 @@
 import {useLocation} from "react-router-dom";
 import {useDispatch} from "react-redux";
-import {tdReturnAuth} from "../actions";
+import {tdGetToken} from "../actions";
 
 const ReturnAuth = ({provider}) => {
   const dispatch = useDispatch()
   const code = new URLSearchParams(useLocation().search).get('code')
-  console.log(code)
 
   if (provider === 'td') {
-    dispatch(tdReturnAuth(code))
+    dispatch(tdGetToken(code))
   }
 }
 

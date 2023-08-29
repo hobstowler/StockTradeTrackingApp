@@ -116,12 +116,13 @@ export const tdConnect =
 
 export const tdGetToken = (code) =>
   async (dispatch, state, _) => {
+  dispatch({type: 'td_get_token_requested'})
 
   const body = {
     "grant_type": "authorization_code",
     "access_type": "offline",
     "code": code,
-    "client_id": "WKARA9UYSUE8NO3FQMXCSGE5HSNG5RML",
+    "client_id": "WKARA9UYSUE8NO3FQMXCSGE5HSNG5RML@AMER.OAUTHAP",
     "redirect_uri": `https://${window.location.host}/auth/td_return_auth`,
   }
   let formBody = []
@@ -132,15 +133,49 @@ export const tdGetToken = (code) =>
   }
   formBody = formBody.join('&')
 
-  const token = await fetch("https://api.tdameritrade.com/v1/oauth2/token", {
+  fetch("https://api.tdameritrade.com/v1/oauth2/token", {
+    method: 'POST',
     headers: {
       "Content-Type": "application/x-www-form-urlencoded"
     },
     body: formBody
-  }).then(response => response.json())
+  }).then(async response => {
+    const hasJson = response.headers.get('content-type')?.includes('application/json')
+    const json = hasJson ? await response.json() : null
 
-  console.log(token)
+    if (!response.ok) {
+      let error = (json && json.error) || response.status
+      dispatch({type: 'td_get_token_failed'})
+      return
+    }
+    console.log('bueno')
+    console.log(json)
+    dispatch({type: 'td_get_token_completed'})
+    dispatch(tdPushToken(json))
+  })
 }
+
+const tdPushToken = (token) =>
+  (dispatch, state, _) => {
+    console.log('pushing')
+    dispatch({type: 'td_token_push_requested'})
+
+    fetch('/auth/td_push_token', {
+      method: 'POST',
+      body: token,
+    }).then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const json = hasJson ? await response.json() : null
+
+      if (!response.ok) {
+        let error = (json && json.error) || response.status
+        dispatch({type: 'td_token_push_failed'})
+        return
+      }
+      dispatch({type: 'td_token_push_completed'})
+      window.location.href = '/'
+    })
+  }
 
 export const tdReturnAuth = (code) =>
   (dispatch, state, _) => {
