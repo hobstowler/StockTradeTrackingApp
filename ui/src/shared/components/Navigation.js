@@ -1,27 +1,45 @@
 import {Box, useTheme} from "@mui/system";
-import {Link, useMediaQuery} from '@mui/material';
+import {Button, Link, useMediaQuery} from '@mui/material';
 import {green, grey} from '@mui/material/colors';
 
 import {GiHamburgerMenu} from 'react-icons/gi'
 
 import {navLinks} from "../../config/NavigationLinks";
+import {useState} from "react";
+import AccountMenu from "../../account/components/AccountMenu";
 
 function Navigation() {
   const theme = useTheme();
   const mobileFormat = !useMediaQuery(theme.breakpoints.up('sm'));
 
+  const [anchor, setAnchor] = useState(null)
+
+  const openMenu = (e) => {
+    setAnchor(e.currentTarget)
+  }
+
+  const closeMenu = () => {
+    setAnchor(null)
+  }
+
   const mobileNav =
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      fontSize: '8vw',
-      color: grey[900],
-      ml: '20px',
-      cursor: 'pointer'
-    }}>
-      <GiHamburgerMenu/>
-    </Box>
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          fontSize: '8vw',
+          color: grey[900],
+          ml: '20px',
+          cursor: 'pointer'
+        }}
+        onClick={openMenu}
+      >
+        <GiHamburgerMenu/>
+      </Box>
+      <AccountMenu anchor={anchor} onClose={closeMenu} />
+    </>
 
   if (mobileFormat) {
     return mobileNav

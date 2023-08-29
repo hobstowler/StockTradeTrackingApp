@@ -1,10 +1,23 @@
-import {useSelector} from "react-redux";
-import {Box, Container, FormControl, FormHelperText, MenuItem, Select} from "@mui/material";
+import {useDispatch, useSelector} from "react-redux";
+import {
+  Box,
+  Container,
+  FormControl,
+  FormHelperText,
+  MenuItem,
+  Select,
+  Tooltip,
+  useMediaQuery,
+  useTheme
+} from "@mui/material";
 import {useEffect, useState} from "react";
 
 const AccountSelector = () => {
+  const dispatch = useDispatch()
+  const theme = useTheme()
   const account = useSelector(({account}) => account)
   const activeAccount = account.activeAccount
+  const mobileFormat = !useMediaQuery(theme.breakpoints.up('md'));
 
   useEffect(() => {
     if (account?.accounts) {
@@ -23,22 +36,30 @@ const AccountSelector = () => {
     setAccountIds(ids)
   }
 
-  const handleChange = () => {
-
+  const handleChange = (e) => {
+    const accounts = account.accounts
+    for (const acc of accounts) {
+      if (e.target.value === acc[Object.keys(acc)[0]]?.accountId) {
+        dispatch({type: 'change_active_account', activeAccount: acc})
+        return
+      }
+    }
   }
 
-  if (account?.accounts.length === 0) {
+  if (account?.accounts.length === 0 || mobileFormat) {
     return
   }
 
   return (
     <Container maxWidth={"md"}>
       <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '20px', mt: '20px'}}>
-        <Box sx={{mr: '15px', fontSize: '15px', pb: '5px'}}>
+        <Box sx={{mr: '15px', fontSize: '15px', pb: '5px', color: 'darkgrey'}}>
           Active Account:
         </Box>
-        <FormControl variant='standard' size='small' disabled={accountIds.length < 1}>
+        <Tooltip title={accountIds.length <= 1 ? 'No accounts to switch to' : 'Active account in view'} arrow>
+        <FormControl variant='standard' size='small' disabled={accountIds.length <= 1}>
           <Select
+            sx={{pl: '10px', pr: '5px'}}
             labelId='active-account-select-label'
             id='active-account-select'
             label='Active Account'
@@ -50,6 +71,7 @@ const AccountSelector = () => {
             )}
           </Select>
         </FormControl>
+        </Tooltip>
       </Box>
     </Container>
   )

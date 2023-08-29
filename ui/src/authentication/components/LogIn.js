@@ -1,13 +1,14 @@
 import {Link} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
-import {Button, useMediaQuery} from '@mui/material';
+import {Button, Tooltip, useMediaQuery} from '@mui/material';
 import {useDispatch, useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
 import AccountMenu from "../../account/components/AccountMenu";
 import {disconnect, loginUser, logoutUser, tdConnect, tdVerify} from "../actions";
 import {PulseLoader} from "react-spinners";
+import LinkIcon from '@mui/icons-material/Link';
 
 export default function LogIn() {
   const dispatch = useDispatch();
@@ -37,7 +38,6 @@ export default function LogIn() {
   const [anchor, setAnchor] = useState(null)
 
   const openMenu = (e) => {
-    console.log('ok')
     setAnchor(e.currentTarget)
   }
 
@@ -65,15 +65,20 @@ export default function LogIn() {
                 {`Logged in as ${user?.username}`}
               </Box>
               {isConnected ?
-                <Button sx={{ml: '10px'}} variant={"outlined"} disabled={status?.processing}
-                        onClick={() => dispatch(disconnect())}>
-                  {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Disconnect'}
-                </Button> :
+                <Tooltip title='Connected to TD Ameritrade'>
+                  <LinkIcon sx={{color: 'green', ml: '10px', mt: '4px', fontSize: '30px'}}/>
+                </Tooltip>
+                // <Button sx={{ml: '10px'}} variant={"outlined"} disabled={status?.processing}
+                //         onClick={() => dispatch(disconnect())}>
+                //   <LinkIcon/>
+                //   {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Disconnect'}
+                // </Button>
+                :
                 <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="outlined">
                   {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Connect'}
                 </Button>
               }
-              <Button sx={{ml: '10px'}} variant={"contained"} onClick={() => dispatch(logoutUser())}>
+              <Button sx={{ml: '10px'}} variant={"outlined"} onClick={() => dispatch(logoutUser())}>
                 {status?.processing ? <PulseLoader size={12} color='white'/> : 'Log Out'}</Button>
             </Box> :
             <Link to="/login">
