@@ -158,11 +158,12 @@ export const tdGetToken = (code) =>
 const tdPushToken = (token) =>
   (dispatch, state, _) => {
     console.log('pushing')
+    console.log(token)
     dispatch({type: 'td_token_push_requested'})
 
     fetch('/auth/td_push_token', {
       method: 'POST',
-      body: token,
+      body: JSON.stringify({...token}),
     }).then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null
@@ -173,7 +174,7 @@ const tdPushToken = (token) =>
         return
       }
       dispatch({type: 'td_token_push_completed'})
-      window.location.href = '/'
+      // window.location.href = '/'
     })
   }
 

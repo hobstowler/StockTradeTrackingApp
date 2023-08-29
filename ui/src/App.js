@@ -16,25 +16,32 @@ import LogIn from "./authentication/components/LogIn";
 import Balances from "./account/components/Balances";
 import Callback from "./authentication/components/Callback";
 import ReturnAuth from "./authentication/components/ReturnAuth";
+import {useDispatch, useSelector} from "react-redux";
+import {loadAccounts, loadAccountTransactions} from "./account/actions";
 
-function App() {
-  const [tdConnected, setTdConnected] = useState(false)
+const App = () => {
+  const dispatch = useDispatch();
+  const user = useSelector(({authentication}) => authentication?.user)
+  const status = useSelector(({authentication}) => authentication?.status)
+  const isLoggedIn = status?.isLoggedIn
+  const isConnected = status?.isConnected
 
-  const [activeAccount, setActiveAccount] = useState({})
-  const [activePositions, updateActivePositions] = useState([])
-  const [openOrders, updateOpenOrders] = useState([])
+  const account = useSelector(({account}) => account)
+  const activeAccount = account?.activeAccount
 
-  const disconnect = () => {
-    fetch('/auth/disconnect', {
-      method: 'POST'
-    })
-      .then(response => {
-        if (response.status === 302 || response.status === 200) {
-          setTdConnected(false)
-          // TODO other logout-related tasks
-        }
-      })
-  }
+  useEffect(() => {
+    if (!isConnected) {
+      return
+    }
+
+    dispatch(loadAccounts())
+  }, [isConnected])
+
+  // useEffect(() => {
+  //   if (activeAccount?.securitiesAccount) {
+  //     dispatch(loadAccountTransactions(activeAccount.securitiesAccount.accountId))
+  //   }
+  // }, [activeAccount])
 
   return (
     <BrowserRouter>
@@ -43,11 +50,11 @@ function App() {
       <Balances/>
 
       <Routes>
-        <Route path='/' element={<Home positions={activePositions} openOrders={openOrders}/>}/>
+        <Route path='/' element={<Home/>}/>
         <Route path='/stocks'
-               element={<Stocks positions={activePositions} activeAccount={activeAccount} openOrders={openOrders}/>}/>
+               element={<Stocks/>}/>
         <Route path='/options'
-               element={<Options positions={activePositions} openOrders={openOrders}/>}/>>
+               element={<Options/>}/>
         <Route path='/crypto' element={<Crypto/>}/>
         <Route path='/watch' element={<Watch/>}/>
         <Route path='/account' element={<Account/>}/>

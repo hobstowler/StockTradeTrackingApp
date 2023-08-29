@@ -164,12 +164,12 @@ type tdTokenResp struct {
 
 func (r *Repository) tdPushToken(c *gin.Context) {
 	var tdToken tdTokenResp
-	err := c.Bind(&tdToken)
+	err := c.BindJSON(&tdToken)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println(tdToken)
+	fmt.Println(fmt.Sprintf("%s", tdToken.AccessToken))
 
 	tdClaims := CustomClaims{
 		FirstName:          "",
@@ -190,7 +190,7 @@ func (r *Repository) tdPushToken(c *gin.Context) {
 
 	// Set cookies and redirect back to main page
 	c.SetCookie("jwt_td", jwtString, tdToken.RefreshTokenExpiresIn, "/", c.Request.URL.Host, false, true)
-	c.JSON(http.StatusOK, "")
+	c.JSON(http.StatusOK, tdToken)
 }
 
 func (r *Repository) verifyTD(c *gin.Context) {

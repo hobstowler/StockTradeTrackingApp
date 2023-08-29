@@ -222,7 +222,7 @@ type Instrument struct {
 }
 
 type OptionDeliverable struct {
-	Symbol           string  `json:"symbol""`
+	Symbol           string  `json:"symbol"`
 	DeliverableUnits float64 `json:"deliverableUnits"`
 	CurrencyType     string  `json:"currencyType"`
 	AssetType        string  `json:"assetType"`

@@ -38,6 +38,11 @@ const reducer = (state = initialState, action) => {
         ...state,
         status: updateStatus(state.status, action),
       };
+    case 'user_login_failure':
+      return {
+        ...state,
+        status: {...state.status, isLoggedIn: false}
+      }
     case 'td_auth_requested':
     case 'td_verify_requested':
     case 'td_auth_failed':

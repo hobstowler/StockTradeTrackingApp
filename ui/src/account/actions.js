@@ -1,11 +1,7 @@
 export const loadAccounts =
   () =>
-  (dispatch, {account}, _) => {
-    if (account.positions) {
-      dispatch({ type: 'all_account_refresh_requested' })
-    } else {
-      dispatch({ type: 'all_account_initial_load_requested' })
-    }
+  (dispatch, state, _) => {
+    dispatch({ type: 'all_account_initial_load_requested' })
 
     fetch('/account/')
       .then(async response => {
@@ -17,18 +13,16 @@ export const loadAccounts =
           dispatch({type: 'all_account_load_error', error: error})
         }
 
-        dispatch({type: 'all_account_load_completed', ...json})
-      })
+        console.log(json)
+        dispatch({type: 'all_account_load_completed', accounts: json})
+      }
+    )
   }
 
 export const loadAccount =
   (accountId) =>
-  (dispatch, {account}, _) => {
-    if (account.positions) {
-      dispatch({ type: 'account_refresh_requested' })
-    } else {
-      dispatch({ type: 'account_initial_load_requested' })
-    }
+  (dispatch, state, _) => {
+    dispatch({ type: 'account_refresh_requested' })
 
     fetch(`/account/${accountId}`)
       .then(async response => {
@@ -40,6 +34,27 @@ export const loadAccount =
           dispatch({type: 'all_account_load_error', error: error})
         }
 
-        dispatch({type: 'account_load_completed', ...json})
-      })
+        dispatch({type: 'account_load_completed', transactions: json})
+      }
+    )
+  }
+
+export const loadAccountTransactions =
+  (accountId) =>
+  (dispatch, state, _) => {
+    dispatch({type: 'load_transactions_requested'})
+
+    fetch(`/account/${accountId}/transactions`)
+      .then(async response => {
+          const hasJson = response.headers.get('content-type')?.includes('application/json')
+          const json = hasJson ? await response.json() : null
+
+          if (!response.ok) {
+            let error = (json && json.error) || response.status
+            dispatch({type: 'load_transactions_failed', error: error})
+          }
+
+          dispatch({type: 'load_transactions_completed', transactions: json})
+        }
+      )
   }
