@@ -125,7 +125,9 @@ const AccountMenu = ({ anchor, onClose }) => {
       anchorEl={anchor}
       onClose={onClose}
       keepMounted
-      PaperProps={{sx:{width: '250px !important'}}}
+      PaperProps={{sx:{width: '225px !important'}}}
+      anchorOrigin={{horizontal:'center', vertical: 'bottom'}}
+      transformOrigin={{horizontal: 0, vertical: 5}}
     >
       {menuContent}
     </Menu>

@@ -4,7 +4,6 @@ const initialState = {
 }
 
 const reducer = (state = initialState, action) => {
-  console.log(action)
   switch (action.type) {
     case 'all_account_load_completed':
       return {

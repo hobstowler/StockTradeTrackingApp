@@ -19,28 +19,13 @@ const AccountSelector = () => {
   const activeAccount = account.activeAccount
   const mobileFormat = !useMediaQuery(theme.breakpoints.up('md'));
 
-  useEffect(() => {
-    if (account?.accounts) {
-      findAccountIds(account?.accounts)
-    }
-  }, [account])
-
-  const [accountIds, setAccountIds] = useState([])
-
-  const findAccountIds = (accounts) => {
-    const ids = []
-    for (const acc of accounts) {
-      ids.push(acc[Object.keys(acc)[0]]?.accountId)
-    }
-
-    setAccountIds(ids)
-  }
+  const accountIds = account.accounts.map(a => a.accountId)
 
   const handleChange = (e) => {
     const accounts = account.accounts
-    for (const acc of accounts) {
-      if (e.target.value === acc[Object.keys(acc)[0]]?.accountId) {
-        dispatch({type: 'change_active_account', activeAccount: acc})
+    for (const account of accounts) {
+      if (e.target.value === account?.accountId) {
+        dispatch({type: 'change_active_account', activeAccount: account})
         return
       }
     }
@@ -63,7 +48,7 @@ const AccountSelector = () => {
             labelId='active-account-select-label'
             id='active-account-select'
             label='Active Account'
-            value={activeAccount[Object.keys(activeAccount)[0]].accountId}
+            value={activeAccount.accountId}
             onChange={handleChange}
           >
             {accountIds.map((accountId) =>

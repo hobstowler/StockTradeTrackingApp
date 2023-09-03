@@ -5,7 +5,7 @@ import Header from "./shared/components/Header";
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Footer from "./shared/components/Footer";
 import {default as Watch} from "./watch";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {default as Stocks} from "./stock";
 import {default as Options} from "./options";
 import {default as Crypto} from "./crypto";
@@ -18,6 +18,7 @@ import Callback from "./authentication/components/Callback";
 import ReturnAuth from "./authentication/components/ReturnAuth";
 import {useDispatch, useSelector} from "react-redux";
 import {loadAccounts, loadAccountTransactions} from "./account/actions";
+import AccountSelector from "./account/components/AccountSelector";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -47,6 +48,7 @@ const App = () => {
     <BrowserRouter>
       <LogIn/>
       <Header/>
+      <AccountSelector />
       <Balances/>
 
       <Routes>

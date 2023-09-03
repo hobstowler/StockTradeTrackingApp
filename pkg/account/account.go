@@ -32,6 +32,8 @@ func InitRepo(a *config.AppConfig) {
 
 type Accounts []Account
 
+type SecuritiesAccounts []SecuritiesAccount
+
 type Account struct {
 	SecuritiesAccount SecuritiesAccount `json:"securitiesAccount"`
 }
@@ -305,7 +307,13 @@ func (r *Repository) getAccounts(c *gin.Context) {
 	} else {
 		var result Accounts
 		_ = json.Unmarshal(body, &result)
-		c.JSON(http.StatusOK, result)
+
+		var modifiedResult SecuritiesAccounts
+		for _, res := range result {
+			modifiedResult = append(modifiedResult, res.SecuritiesAccount)
+		}
+
+		c.JSON(http.StatusOK, modifiedResult)
 		return
 	}
 }
@@ -342,7 +350,7 @@ func (r *Repository) getAccount(c *gin.Context) {
 	} else {
 		var result Account
 		_ = json.Unmarshal(body, &result)
-		c.JSON(http.StatusOK, result)
+		c.JSON(http.StatusOK, result.SecuritiesAccount)
 		return
 	}
 }

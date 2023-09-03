@@ -6,10 +6,11 @@ import {Box} from "@mui/system";
 import {Link} from "react-router-dom";
 
 const Balances = () => {
-  const account = useSelector(({account}) => account);
-  const user = useSelector(({user}) => user)
-  const isLoggedIn = user?.isLoggedIn
-  const isConnected = user?.isConnected
+  const authentication = useSelector(({authentication}) => authentication);
+  const account = useSelector(({account}) => account?.activeAccount)
+  const status = authentication?.status
+  const isLoggedIn = status?.isLoggedIn
+  const isConnected = status?.isConnected
 
   const innerContent = () => {
     if (isLoggedIn && !isConnected) {
@@ -19,7 +20,7 @@ const Balances = () => {
           &nbsp;your TD Ameritrade account to view your balances
         </>
       )
-    } else if (!account?.isLoaded) {
+    } else if (!status?.isLoaded) {
       return <BarLoader color='green' />
     } else {
       return (
@@ -28,7 +29,7 @@ const Balances = () => {
     }
   }
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !account) {
     return
   }
 
