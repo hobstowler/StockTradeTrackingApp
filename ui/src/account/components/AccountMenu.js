@@ -31,6 +31,10 @@ const AccountMenu = ({ anchor, onClose }) => {
 
   const [accountSwitch, setAccountSwitch] = useState(false)
 
+  if (!isLoggedIn || !account) {
+    return
+  }
+
   const handleAccountSwitch = (account) => {
     dispatch({type: 'change_active_account', activeAccount: account})
     setAccountSwitch(false)

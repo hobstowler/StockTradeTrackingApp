@@ -174,7 +174,7 @@ const tdPushToken = (token) =>
         return
       }
       dispatch({type: 'td_token_push_completed'})
-      // window.location.href = '/'
+      window.location.href = '/'
     })
   }
 

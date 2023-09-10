@@ -1,16 +1,35 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {BarLoader} from "react-spinners";
 import {useSelector} from "react-redux";
-import {Container} from "@mui/material";
+import {Button, Container} from "@mui/material";
 import {Box} from "@mui/system";
 import {Link} from "react-router-dom";
+import {getCurrencyVal} from "../actions";
 
 const Balances = () => {
   const authentication = useSelector(({authentication}) => authentication);
   const account = useSelector(({account}) => account?.activeAccount)
+  const { currentBalances: current, initialBalances: initial } = account
+
   const status = authentication?.status
   const isLoggedIn = status?.isLoggedIn
   const isConnected = status?.isConnected
+
+  const [hidden, setHidden] = useState(true)
+
+  if (hidden) {
+    return (
+      <Container>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          mt: '30px',}}
+        >
+          <Button onClick={() => setHidden(false)}>Show Balances</Button>
+        </Box>
+      </Container>
+    )
+  }
 
   const innerContent = () => {
     if (isLoggedIn && !isConnected) {
@@ -24,7 +43,11 @@ const Balances = () => {
       return <BarLoader color='green' />
     } else {
       return (
-        <>abc</>
+        <>
+          {`Account Value: ${getCurrencyVal(current?.liquidationValue)}`}<br />
+          {`Available Funds: ${getCurrencyVal(current?.availableFunds)}`}<br />
+          {`Cash: ${getCurrencyVal(current?.moneyMarketFund)}`}
+        </>
       )
     }
   }

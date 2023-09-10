@@ -51,6 +51,7 @@ const reducer = (state = initialState, action) => {
     case 'td_auth_completed':
     case 'td_verify_completed':
       return {...state, status: {...state.status, isConnected: true}}
+    case 'td_get_token_requested':
     default:
       return state
   }

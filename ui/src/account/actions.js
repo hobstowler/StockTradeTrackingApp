@@ -58,3 +58,7 @@ export const loadAccountTransactions =
         }
       )
   }
+
+export const getCurrencyVal = (val) => {
+  return val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+}
