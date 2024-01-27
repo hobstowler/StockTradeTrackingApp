@@ -24,7 +24,7 @@ function Header() {
             Good. Looks.</Box>
         </Box>
         <Navigation/>
-      </Box>
+      </Box>x
     </Container>
   )
 }
