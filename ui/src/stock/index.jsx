@@ -1,25 +1,25 @@
-import React, {useEffect, useState} from 'react';
-import StockList from "./components/StockList";
-import StockWatchList from "./components/StockWatchList";
-import KeyIndicators from "./components/KeyIndicators";
-import OpenOrdersModule from "../orders/components/OpenOrdersModule";
-import TransactionHistory from "../history/components/TransactionHistory";
+import React from 'react';
 import {Container} from "@mui/material";
-import Search from "../shared/components/Search";
+import {Box} from "@mui/system";
+import StockKeyIndicators from "./components/StockKeyIndicators";
+import StockSearch from "./components/StockSearch";
+import StockGraph from "./components/StockGraph";
+import StockDetail from "./components/StockDetail";
 
-export default function Index({positions, activeAccount, openOrders}) {
-  const [longStocks, setLongStocks] = useState([])
-  const [shortStocks, setShortStocks] = useState([])
-  const [activeStock, setActiveStock] = useState([])
-  const [loading, updateLoading] = useState(false)
-  const [symbol, setSymbol] = useState("")
-
-    useEffect(() => {
-    }, [])
+const Index = () => {
 
     return (
-      <Container maxWidth={"md"}>
-        <Search helperText='Search for a stock' />
+      <Container className='stockTab' maxWidth={'xl'}>
+        <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'center', maxWidth: 'lg', minWidth: 'lg'}}>
+          <StockSearch />
+          <StockKeyIndicators />
+        </Box>
+        <Box>
+          <StockDetail />
+          <StockGraph />
+        </Box>
       </Container>
     )
 }
+
+export default Index
