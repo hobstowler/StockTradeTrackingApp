@@ -1,49 +1,18 @@
 import {Box, useTheme} from "@mui/system";
-import {Button, Link, useMediaQuery} from '@mui/material';
+import {Link, useMediaQuery} from '@mui/material';
 import {green, grey} from '@mui/material/colors';
 
-import {GiHamburgerMenu} from 'react-icons/gi'
-
 import {navLinks} from "../../config/NavigationLinks";
-import {useState} from "react";
-import AccountMenu from "../../account/components/AccountMenu";
+import MobileNav from "./MobileNav";
 
 function Navigation() {
   const theme = useTheme();
   const mobileFormat = !useMediaQuery(theme.breakpoints.up('sm'));
 
-  const [anchor, setAnchor] = useState(null)
-
-  const openMenu = (e) => {
-    setAnchor(e.currentTarget)
-  }
-
-  const closeMenu = () => {
-    setAnchor(null)
-  }
-
-  const mobileNav =
-    <>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          fontSize: '8vw',
-          color: grey[900],
-          ml: '20px',
-          cursor: 'pointer'
-        }}
-        onClick={openMenu}
-      >
-        <GiHamburgerMenu/>
-      </Box>
-      <AccountMenu anchor={anchor} onClose={closeMenu} />
-    </>
-
   if (mobileFormat) {
-    return mobileNav
+    return <MobileNav />
   }
+
   return (
     <Box sx={{
       display: 'flex',
@@ -52,6 +21,7 @@ function Navigation() {
       borderTop: {md: '2px solid black'},
       borderBottom: {md: `2px solid ${grey[300]}`},
       justifyContent: {xs: 'center'},
+      flexGrow: 1,
     }}>
       {navLinks.map((link, i) => (
         <Link
@@ -61,11 +31,6 @@ function Navigation() {
               color: green[900],
               borderRight: `1px solid ${grey[200]}`,
               borderLeft: `1px solid ${grey[200]}`
-            },
-            ':first-of-type': {
-              '&:hover': {
-                borderLeft: {md:'1px solid transparent'}
-              }
             },
             borderTop: {xs: 'none', sm: `2px solid ${grey[200]}`, md: 'none'},
             borderRight: '1px solid transparent',
