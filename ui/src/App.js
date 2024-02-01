@@ -19,6 +19,7 @@ import ReturnAuth from "./authentication/components/ReturnAuth";
 import {useDispatch, useSelector} from "react-redux";
 import {loadAccounts, loadAccountTransactions} from "./account/actions";
 import AccountSelector from "./account/components/AccountSelector";
+import MarketStatus from "./shared/components/MarketStatus";
 
 const App = () => {
   const dispatch = useDispatch();
@@ -49,6 +50,7 @@ const App = () => {
       <LogIn/>
       <Header/>
       <AccountSelector />
+      <MarketStatus />
       <Balances/>
 
       <Routes>
