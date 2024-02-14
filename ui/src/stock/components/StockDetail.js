@@ -32,7 +32,6 @@ const StockDetail = () => {
   const [pctChange, setPctChange] = useState(false)
   const stock = useSelector(({stock}) => stock.activeSymbol)
   const theme = useTheme()
-  console.log(stock)
 
   const togglePctChange = () => {
     setPctChange(!pctChange)
@@ -59,21 +58,23 @@ const StockDetail = () => {
         <Box sx={{display: 'flex', alignItems: 'center', gap: '8px'}}>
           <Item sx={{borderRight: '2px solid black', pr: '12px'}} starttext='Open ' item={stock?.open} />
         </Box>
-        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'left', gap: '2px', justifyContent: 'start'}}>
-          <Item sx={{color: theme.palette.success.main}} text='High: ' item={stock?.high} />
-          <Box onClick={togglePctChange}  sx={{display: 'flex', flexDirection: 'row', gap: '8px'}}>
+        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', justifyContent: 'start'}}>
+          <Item sx={{color: theme.palette.success.main, fontSize: '11px'}} text='High: ' item={stock?.high} />
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '8px'}}>
             <Item text='Last: ' item={stock?.last} />
-            <Item
-              starttext='( '
-              item={pctChange ? stock?.change_percentage : stock?.change}
-              currency={!pctChange}
-              endtext={pctChange ? '% )' : ')'}
-              sx={{
-                color: stock?.change > 0 ? theme.palette.success.main : theme.palette.error.main
-              }}
-            />
           </Box>
-          <Item sx={{color: theme.palette.warning.main}} item={stock?.low} />
+          <Item sx={{color: theme.palette.warning.main, fontSize: '11px'}} item={stock?.low} />
+        </Box>
+        <Box onClick={togglePctChange} sx={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
+          <Item
+            starttext='('
+            item={pctChange ? stock?.change_percentage : stock?.change}
+            currency={!pctChange}
+            endtext={pctChange ? '%)' : ')'}
+            sx={{
+              color: stock?.change > 0 ? theme.palette.success.main : theme.palette.error.main
+            }}
+          />
         </Box>
         <Box sx={{display: 'flex', alignItems: 'center', gap: '8px'}}>
           <Item sx={{borderLeft: '2px solid black', pl: '12px'}} endtext='Close' item={stock?.close} />
