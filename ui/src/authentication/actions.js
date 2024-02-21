@@ -1,5 +1,3 @@
-import {display} from "@mui/system";
-
 export const loginUser =
   (data) =>
   (dispatch, state, _) => {

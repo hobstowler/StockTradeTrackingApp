@@ -1,6 +1,6 @@
 import {Button, TextField} from "@mui/material";
 import {Box} from "@mui/system";
-import { useState} from "react";
+import {useState} from "react";
 
 const Search = ({ setSearchValue = () => {}, helperText, buttonText = 'Search' }) => {
   const [value, setValue] = useState('')

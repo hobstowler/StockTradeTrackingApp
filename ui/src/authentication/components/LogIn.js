@@ -6,7 +6,7 @@ import {useDispatch, useSelector} from "react-redux";
 import {BsFillGearFill} from "react-icons/bs";
 import {grey} from '@mui/material/colors';
 import AccountMenu from "../../account/components/AccountMenu";
-import {disconnect, loginUser, logoutUser, tdConnect, tdVerify} from "../actions";
+import {loginUser, logoutUser, tdConnect, tdVerify} from "../actions";
 import {PulseLoader} from "react-spinners";
 import LinkIcon from '@mui/icons-material/Link';
 
@@ -68,13 +68,8 @@ export default function LogIn() {
                 <Tooltip title='Connected to TD Ameritrade'>
                   <LinkIcon sx={{color: 'green', ml: '10px', mt: '4px', fontSize: '30px'}}/>
                 </Tooltip>
-                // <Button sx={{ml: '10px'}} variant={"outlined"} disabled={status?.processing}
-                //         onClick={() => dispatch(disconnect())}>
-                //   <LinkIcon/>
-                //   {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Disconnect'}
-                // </Button>
                 :
-                <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="outlined">
+                <Button sx={{ml: '10px'}} onClick={() => dispatch(tdConnect())} variant="contained">
                   {status?.processing ? <PulseLoader size={12} color={theme.palette.primary.light}/> : 'Connect'}
                 </Button>
               }

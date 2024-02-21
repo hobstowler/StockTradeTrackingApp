@@ -1,16 +1,5 @@
 import {useDispatch, useSelector} from "react-redux";
-import {
-  Box,
-  Container,
-  FormControl,
-  FormHelperText,
-  MenuItem,
-  Select,
-  Tooltip,
-  useMediaQuery,
-  useTheme
-} from "@mui/material";
-import {useEffect, useState} from "react";
+import {Box, Container, FormControl, MenuItem, Select, Tooltip, useMediaQuery, useTheme} from "@mui/material";
 
 const AccountSelector = () => {
   const dispatch = useDispatch()

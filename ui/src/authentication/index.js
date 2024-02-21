@@ -1,8 +1,8 @@
 import {Box, Container, Typography} from "@mui/material";
 import RegisterForm from "./components/RegisterForm";
 import LoginForm from "./components/LoginForm";
-import { FacebookLoginButton, GithubLoginButton, GoogleLoginButton} from "react-social-login-buttons";
-import {useEffect, useState} from "react";
+import {FacebookLoginButton, GithubLoginButton, GoogleLoginButton} from "react-social-login-buttons";
+import {useEffect} from "react";
 
 const Authentication = ({ login }) => {
   useEffect(() => {

@@ -60,12 +60,14 @@ const Balances = () => {
     <Container>
       <Box sx={{
         display: 'flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
+        alignContent: 'center',
         justifyContent: 'center',
         mt: '30px',
         fontSize: {xs: '3.1vw', sm: '14px'}
       }}>
         {innerContent()}
+        <Button onClick={() => setHidden(true)}>Hide Balances</Button>
       </Box>
     </Container>
   )

@@ -1,5 +1,4 @@
-import {configureStore, getDefaultMiddleware} from "@reduxjs/toolkit";
-import thunkMiddleware from 'redux-thunk';
+import {configureStore} from "@reduxjs/toolkit";
 
 import rootReducer from './reducers'
 

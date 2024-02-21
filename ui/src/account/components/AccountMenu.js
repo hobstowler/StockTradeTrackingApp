@@ -1,16 +1,17 @@
 import {useState} from 'react';
 import {useDispatch, useSelector} from "react-redux";
 import {
+  Box,
+  Divider,
+  Drawer,
+  FormControlLabel,
+  FormGroup,
+  Link,
   Menu,
   MenuItem,
-  FormGroup,
-  FormControlLabel,
-  Divider,
-  Link,
-  Box,
   Switch,
-  Drawer,
-  useMediaQuery, useTheme
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
 
 const AccountMenu = ({ anchor, onClose }) => {
