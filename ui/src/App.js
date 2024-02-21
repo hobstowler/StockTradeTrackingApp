@@ -5,7 +5,7 @@ import Header from "./shared/components/Header";
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
 import Footer from "./shared/components/Footer";
 import {default as Watch} from "./watch";
-import React, {useEffect, useState} from "react";
+import React, {useEffect} from "react";
 import {default as Stocks} from "./stock";
 import {default as Options} from "./options";
 import {default as Crypto} from "./crypto";
@@ -13,11 +13,10 @@ import {default as Insights} from "./insights";
 import {default as Account} from "./account";
 import {default as Authentication} from "./authentication";
 import LogIn from "./authentication/components/LogIn";
-import Balances from "./account/components/Balances";
 import Callback from "./authentication/components/Callback";
 import ReturnAuth from "./authentication/components/ReturnAuth";
 import {useDispatch, useSelector} from "react-redux";
-import {loadAccounts, loadAccountTransactions} from "./account/actions";
+import {loadAccounts} from "./account/actions";
 import AccountSelector from "./account/components/AccountSelector";
 import MarketStatus from "./shared/components/MarketStatus";
 
@@ -51,7 +50,7 @@ const App = () => {
       <Header/>
       <AccountSelector />
       <MarketStatus />
-      <Balances/>
+      {/*<Balances/>*/}
 
       <Routes>
         <Route path='/' element={<Home/>}/>

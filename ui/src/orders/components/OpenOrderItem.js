@@ -1,4 +1,5 @@
-import {BsChevronRight, BsXLg, BsFillPencilFill} from 'react-icons/bs'
+import {BsChevronRight, BsFillPencilFill, BsXLg} from 'react-icons/bs'
+
 export default function OpenOrderItem({order}) {
     let collection = order.orderLegCollection
     return(

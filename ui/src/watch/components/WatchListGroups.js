@@ -38,7 +38,7 @@ const WatchListGroups = (stocks = true) => {
   const handleNewGroup = () => {}
 
   return (
-    <Card sx={{borderBottomLeftRadius: 0, borderTopLeftRadius: 0, minWidth: '680px', maxWidth: '680px'}}>
+    <Box sx={{borderBottomLeftRadius: 0, borderTopLeftRadius: 0, borderLeft: `1px solid ${theme.palette.grey[200]}`, minWidth: '680px', maxWidth: '680px'}}>
       <AppBar
         position='relative'
         sx={{
@@ -109,7 +109,7 @@ const WatchListGroups = (stocks = true) => {
           }
         </Tabs>
       </Box>
-    </Card>
+    </Box>
   )
 }
 

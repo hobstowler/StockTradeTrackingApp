@@ -1,5 +1,5 @@
 import React from 'react'
-import { getCookie, refreshAccessToken, fetchAccessToken } from '../middleware/authentication';
+import {fetchAccessToken, getCookie, refreshAccessToken} from '../middleware/authentication';
 
 const version = "version: 0.0.35"
 

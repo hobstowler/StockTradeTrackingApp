@@ -1,6 +1,6 @@
 import {Box, Button, TextField, Typography} from "@mui/material";
 import {Link} from 'react-router-dom';
-import {registerUser, testDisp} from "../actions";
+import {registerUser} from "../actions";
 import {useDispatch} from "react-redux";
 
 const RegisterForm = ({ initialData }) => {

@@ -1,6 +1,4 @@
-import React, { useEffect } from 'react';
-
-import { refreshAuth } from './actions'
+import React, {useEffect} from 'react';
 
 const Authenticator = () => {
   useEffect(() => {

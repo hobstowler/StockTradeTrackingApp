@@ -19,10 +19,10 @@ const Header = () => {
           borderBottom: {xs: 'none', md: '2px solid black'},
           flexGrow: 1,
         }}>
-          <Box sx={{fontSize: {xs: '7.5vw', sm: '2.8rem'}, fontWeight: 600, color: green[800]}}>
+          <Box sx={{fontSize: {xs: '6.5vw', sm: '2.4rem'}, fontWeight: 600, color: green[800]}}>
             The Ugly Trading App
           </Box>
-          <Box sx={{fontSize: {xs: '4.3vw', sm: '1.6rem'}, fontWeight: 600, color: green[600]}}>
+          <Box sx={{fontSize: {xs: '3.3vw', sm: '1.2rem'}, fontWeight: 600, color: green[600]}}>
             Powered by Stunning. Good. Looks.
           </Box>
         </Box>

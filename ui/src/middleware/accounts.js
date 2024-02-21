@@ -1,6 +1,6 @@
 'use strict'
 
-import {getCookie, refreshAccessToken} from "./misc";
+import {getCookie} from "./misc";
 
 const ACCOUNT_URL ='https://api.tdameritrade.com/v1/accounts'
 

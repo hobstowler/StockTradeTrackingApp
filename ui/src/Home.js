@@ -1,5 +1,4 @@
 import React, {useEffect} from 'react';
-import AccountSelector from "./account/components/AccountSelector";
 
 export default function Home() {
     useEffect(() => {

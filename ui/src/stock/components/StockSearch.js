@@ -1,8 +1,8 @@
-import {Box} from "@mui/system";
-import {Autocomplete, Button, List, ListItem, Menu, MenuItem, Popover, TextField} from "@mui/material";
+import {Box, Container} from "@mui/system";
+import {Autocomplete, Button, TextField} from "@mui/material";
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useState} from "react";
-import {clearSymbols, symbolLookup, symbolSearch} from "../actions";
+import {symbolLookup, symbolSearch} from "../actions";
 
 const StockSearch = () => {
   const [searchTerm, setSearchTerm] = useState('')
@@ -50,9 +50,9 @@ const StockSearch = () => {
   }
 
   return (
-    <Box sx={{flexGrow: 0, mr: '24px'}}>
+    <Box sx={{flexGrow: 1}}>
       <form onSubmit={handleSubmit}>
-        <Box sx={{display: 'flex', flexDirection: 'row'}}>
+        <Container sx={{display: 'flex', flexDirection: {xs: 'row', lg: 'column'}, mt: '12px', alignItems: 'end', gap: '4px'}}>
           <Autocomplete
             open={open}
             disablePortal
@@ -74,14 +74,17 @@ const StockSearch = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                   value={searchTerm}
                   variant='standard'
-                  sx={{minWidth: '500px'}}
+                  sx={{minWidth: '400px', mr: '20px'}}
                   {...params}
                   label={'Symbol Lookup'}
                 />
             }
           />
-          <Button type='submit'>Search</Button>
-        </Box>
+          <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'end'}}>
+            <Button disabled={!Object.keys(activeSymbol).length > 0}>Add to WatchList</Button>
+            <Button type='submit'>Search</Button>
+          </Box>
+        </Container>
       </form>
     </Box>
   )

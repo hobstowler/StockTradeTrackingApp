@@ -1,37 +1,29 @@
 import {useSelector} from "react-redux";
 import {Box, Container, useTheme} from "@mui/system";
-import {Grid} from "@mui/material";
-import {useEffect, useState} from "react";
+import {useState} from "react";
+import Item from "../../shared/components/Item";
+import NorthOutlinedIcon from '@mui/icons-material/NorthOutlined';
+import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
+import {Divider} from "@mui/material";
 
-
-const Item = (props) => {
-  const {starttext = '', endtext = '', item, width = 1, currency = true} = props
-  const [text, setText] = useState('')
-
-  useEffect(() => {
-    if (item === undefined || item === null) {
-      setText('null')
-      return
-    }
-
-    let newText = ''
-    if (currency) {
-      newText = item.toLocaleString("en-US", {style:"currency", currency:"USD"})
-    } else {
-      newText = item
-    }
-
-    setText(`${starttext}${newText}${endtext}`)
-  }, [item])
-  return (
-    <Grid {...props} item xs={width}>{text}</Grid>
-  )
-}
 
 const StockDetail = () => {
   const [pctChange, setPctChange] = useState(false)
   const stock = useSelector(({stock}) => stock.activeSymbol)
   const theme = useTheme()
+
+  const up = theme.palette.success.main
+  const down = theme.palette.error.main
+
+  const lastColor = () => {
+    if (stock?.last > stock?.open) return up
+    if (stock?.last < stock?.open) return down
+    return 'inherit'
+  }
+
+  const changeColor = () => {
+
+  }
 
   const togglePctChange = () => {
     setPctChange(!pctChange)
@@ -40,44 +32,58 @@ const StockDetail = () => {
   if (Object.keys(stock).length === 0) return
 
   return (
-    <Container maxWidth="sm">
+    <Container disableGutters>
+      <Divider />
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
-          gap: '12px',
-          border: '1px solid black',
-          my: '12px',
+          backgroundColor: theme.palette.grey[50],
+          flexGrow: 1,
+          gap: '20px',
+          py: '12px',
           p: '4px'
         }}
       >
-        <Box sx={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-          <Item starttext='( Prev ' endtext=' )' item={stock?.prevclose} />
-        </Box>
-        <Box sx={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-          <Item sx={{borderRight: '2px solid black', pr: '12px'}} starttext='Open ' item={stock?.open} />
-        </Box>
-        <Box sx={{display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', justifyContent: 'start'}}>
-          <Item sx={{color: theme.palette.success.main, fontSize: '11px'}} text='High: ' item={stock?.high} />
-          <Box sx={{display: 'flex', flexDirection: 'row', gap: '8px'}}>
-            <Item text='Last: ' item={stock?.last} />
+        <Box sx={{display: 'flex', lineHeight: '1.1', flexDirection: 'column', alignItems: 'end', fontSize: '13px'}}>
+          {/*<Box sx={{fontWeight: 700}}>Last:</Box>*/}
+          <Box sx={{fontWeight: 600, fontSize: '28px', color: lastColor()}}>
+            <Item item={stock?.last} />
           </Box>
-          <Item sx={{color: theme.palette.warning.main, fontSize: '11px'}} item={stock?.low} />
+          <Box sx={{color: stock?.change < 0 ? down : (stock !== 0 ? up : 'inherit')}}>
+            <Item item={pctChange ? stock.change_percentage : stock.change} currency={!pctChange}/>
+          </Box>
         </Box>
-        <Box onClick={togglePctChange} sx={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-          <Item
-            starttext='('
-            item={pctChange ? stock?.change_percentage : stock?.change}
-            currency={!pctChange}
-            endtext={pctChange ? '%)' : ')'}
-            sx={{
-              color: stock?.change > 0 ? theme.palette.success.main : theme.palette.error.main
-            }}
-          />
+        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <Box sx={{display: 'flex', alignItems: 'center'}}>
+              <NorthOutlinedIcon color='success' fontSize='xs'/>
+            </Box>
+            <Box><Item item={stock?.high || stock?.close || '0'}/></Box>
+          </Box>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last <= stock?.low ? down : 'inherit'}}>
+            <Box sx={{display: 'flex', alignItems: 'end'}}>
+              <SouthOutlinedIcon color='error' fontSize='xs' />
+            </Box>
+            <Box><Item item={stock?.low || '0'} /></Box>
+          </Box>
         </Box>
-        <Box sx={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-          <Item sx={{borderLeft: '2px solid black', pl: '12px'}} endtext='Close' item={stock?.close} />
+        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <Box><Item item={stock?.week_52_high} /></Box>
+          </Box>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last <= stock?.low ? down : 'inherit'}}>
+            <Box><Item item={stock?.week_52_low} /></Box>
+          </Box>
+        </Box>
+        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <Box><Item item={stock?.volume} currency={false} /></Box>
+          </Box>
+          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <Box><Item item={stock?.last_volume} currency={false} /></Box>
+          </Box>
         </Box>
       </Box>
     </Container>
