@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+    Runtime: python3.9
+    Architectures:
+    - x86_64
+    Environment:
+      Variables:
+        TRADIER_PROD_ENDPOINT: 'https://api.tradier.com'
+        TRADIER_SANDBOX_ENDPOINT: 'https://sandbox.tradier.com'
+        TRADIER_PROD_ACCESS_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_PROD_ACCESS_TOKEN}}'
+        TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
+        TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
+
+    LoggingConfig:
+      LogFormat: JSON
+
+Resources:
+  GetClockFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetClock.get_clock
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /clock
+            Method: GET
+  GetSymbolsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetSymbols.get_symbols
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /symbol/{security_type}
+            Method: GET
+  GetOptionSymbolsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetOptionSymbols.get_option_symbols
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /option
+            Method: GET
+  GetCompaniesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetCompanies.get_companies
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: GET
+  GetQuoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetQuotes.get_quotes
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /quote
+            Method: GET
+  GetOptionChainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetOptionChains.get_option_chains
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /option/chains
+            Method: GET
+  GetOptionExpirations:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetOptionExpirations.get_option_expirations
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /option/expirations
+            Method: GET
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  ApiEndpoint:
+    Description: API Gateway endpoint URL for Prod stage for Hello World function
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+#  GetClockFunction:
+#    Description: Hello World Lambda Function ARN
+#    Value: !GetAtt GetClockFunction.Arn
+#  GetClockFunctionIamRole:
+#    Description: Implicit IAM Role created for Hello World function
+#    Value: !GetAtt GetClockFunctionRole.Arn
