@@ -2,6 +2,11 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowOrigin: "'*'"
+      AllowHeaders: "'content-type'"
   Function:
     Timeout: 3
     MemorySize: 128

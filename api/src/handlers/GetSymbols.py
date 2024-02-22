@@ -15,5 +15,9 @@ def get_symbols(event, context):
 
     return {
         "statusCode": r.status_code,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': '*'
+        },
         "body": r.content,
     }

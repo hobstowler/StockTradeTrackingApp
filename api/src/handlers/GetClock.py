@@ -15,5 +15,10 @@ def get_clock(event, context):
 
     return {
         "statusCode": r.status_code,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': "*",
+            'Access-Control-Allow-Methods': 'GET'
+        },
         "body": r.content,
     }

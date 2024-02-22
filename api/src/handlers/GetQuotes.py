@@ -16,6 +16,11 @@ def get_quotes(event, context):
     # return HttpResponse(r.content, status=r.status_code, content_type='application/json')
 
     return {
-        "statusCode": r.status_code,
-        "body": r.content,
+        'statusCode': r.status_code,
+        'headers': {
+            'Access-Control-Allow-Headers': 'Content-Type',
+            'Access-Control-Allow-Origin': "*",
+            'Access-Control-Allow-Methods': 'GET'
+        },
+        'body': r.content,
     }
