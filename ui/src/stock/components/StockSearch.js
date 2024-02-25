@@ -11,7 +11,6 @@ const StockSearch = () => {
   const activeSymbol = useSelector(({stock}) => stock?.activeSymbol)
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch()
-  let input = searchTerm
 
   useEffect(() => {
     if (searchTerm === '') return
@@ -21,14 +20,6 @@ const StockSearch = () => {
 
     return () => clearTimeout(delayLookupFn)
   }, [searchTerm])
-
-  useEffect(() => {
-    if (symbols.length > 0) {
-      setOpen(true)
-    } else {
-      setOpen(false)
-    }
-  }, [symbols])
 
   useEffect(() => {
     if (Object.keys(activeSymbol).length === 0) return
@@ -49,6 +40,13 @@ const StockSearch = () => {
     dispatch(symbolSearch(searchTerm))
   }
 
+  const handleChange = (_, option) => {
+    handleSearch(option)
+  }
+  const handleInputChange = (_, val) => {
+    setInputVal(val)
+  }
+
   return (
     <Box sx={{flexGrow: 1}}>
       <form onSubmit={handleSubmit}>
@@ -61,16 +59,13 @@ const StockSearch = () => {
             inputValue={inputVal}
             variant='standard'
             getOptionLabel={(option) => option?.symbol ? `${option.symbol} - ${option.description}` : ''}
-            onChange={(_, option) => handleSearch(option)}
-            onInputChange={(_, val) => setInputVal(val)}
+            onChange={handleChange}
+            onInputChange={handleInputChange}
             renderInput={
               (params) =>
                 <TextField
                   onBlur={() => setOpen(false)}
-                  onFocus={() => {
-                    console.log(symbols);
-                    setOpen(true)
-                  }}
+                  onFocus={() => setOpen(true)}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   value={searchTerm}
                   variant='standard'

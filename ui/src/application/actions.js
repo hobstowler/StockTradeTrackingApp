@@ -1,5 +1,7 @@
+import {API_ENDPOINT} from "../constants";
+
 export const getClock = () => (dispatch, state, _) => {
-  fetch('/api/clock')
+  fetch(`${API_ENDPOINT}/clock`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null

@@ -1,9 +1,11 @@
+import {API_ENDPOINT} from "../constants";
+
 const stockLookup = () => (dispatch, state, _) => {
 
 }
 
 export const symbolLookup = (term) => (dispatch, state, _) => {
-  fetch(`api/lookup/stock?q=${term}`)
+  fetch(`${API_ENDPOINT}/symbol/stock?q=${term}`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null
@@ -26,7 +28,7 @@ export const symbolLookup = (term) => (dispatch, state, _) => {
 }
 
 export const symbolSearch = (term) => (dispatch, state, _) => {
-  fetch(`api/search?q=${term}&greeks=false`)
+  fetch(`${API_ENDPOINT}/quote?q=${term}&greeks=false`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null
@@ -54,7 +56,7 @@ export const refreshActiveWatchList = (groupName, refresh = false) => (dispatch,
     dispatch({type: 'LOAD_WATCHLIST_START'})
   }
   const symbols = state().stock.watchList.groups?.[groupName].symbols.map((symbol) => {return symbol.symbol})
-  fetch(`api/search?q=${symbols.toString()}&greeks=false`)
+  fetch(`${API_ENDPOINT}/quote?q=${symbols.toString()}&greeks=false`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null
