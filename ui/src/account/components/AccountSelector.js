@@ -28,7 +28,7 @@ const AccountSelector = () => {
     <Container maxWidth={"md"}>
       <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '20px', mt: '20px'}}>
         <Box sx={{mr: '15px', fontSize: '15px', pb: '5px', color: 'darkgrey'}}>
-          Active Account:
+          Active AccountHeader:
         </Box>
         <Tooltip title={accountIds.length <= 1 ? 'No accounts to switch to' : 'Active account in view'} arrow>
         <FormControl variant='standard' size='small' disabled={accountIds.length <= 1}>
@@ -36,7 +36,7 @@ const AccountSelector = () => {
             sx={{pl: '10px', pr: '5px'}}
             labelId='active-account-select-label'
             id='active-account-select'
-            label='Active Account'
+            label='Active AccountHeader'
             value={activeAccount.accountId}
             onChange={handleChange}
           >

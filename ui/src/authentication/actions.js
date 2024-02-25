@@ -1,3 +1,9 @@
+export const setSession =
+  (session) =>
+  (dispatch, state, _) => {
+    dispatch({type: 'set_session', session: session})
+}
+
 export const loginUser =
   (data) =>
   (dispatch, state, _) => {

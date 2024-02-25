@@ -1,55 +1,36 @@
-import React from 'react'
-import {fetchAccessToken, getCookie, refreshAccessToken} from '../middleware/authentication';
+import {Card, Container, Modal} from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {useSelector} from "react-redux";
 
-const version = "version: 0.0.35"
+const Authenticator = ({ auth, displayLogin, setDisplayLogin }) => {
+  const [open, setOpen] = useState(false)
+  const {session} = useSelector(({authentication}) => authentication)
 
-export default class Authenticator extends React.Component {
-  constructor(props) {
-    super();
-    this.state = {
-      authenticated: "no"
-    };
-    this.refreshAuth = this.refreshAuth.bind(this)
+  const handleClose = (event, reason) => {
+    if (reason && reason !== "backdropClick")
+        return;
+    setOpen(false);
+    setDisplayLogin(false)
   }
 
-  componentDidMount() {
-    var access_token = encodeURIComponent(getCookie("access_token"))
-    var refresh_token = encodeURIComponent(getCookie("refresh_token"))
-    if ((access_token === "") && (refresh_token !== "")) {
-      refreshAccessToken()
-      this.setState({authenticated: "yes"});
-    } else if (refresh_token === "") {
-      fetchAccessToken()
-      this.setState({authenticated: "yes"});
-    } else {
-      this.setState({authenticated: "no"});
-    }
-  }
+  useEffect(() => {
+    setOpen(session === null)
+  }, [session])
 
-  refreshAuth() {
-    var refresh_token = encodeURIComponent(getCookie("refresh_token"))
-    if (refresh_token === "")
-    {
-      fetchAccessToken();
-      this.setState({authenticated: "yes"});
-    } else {
-      refreshAccessToken();
-      this.setState({authenticated: "yes"});
-    }
-  }
+  if (session) return
 
-  render() {
-    const auth = this.state.authenticated
-    if (auth === "no") {
-      return (
-        <div class="auth">
-          <button onClick={this.refreshAuth()}>Refresh Authentication</button>
-        </div>
-      )
-    } else {
-      return (
-        <div class="auth">Authenticated</div>
-      )
-    }
-  }
+  return (
+    <Modal
+      open={open || displayLogin}
+      onClose={handleClose}
+    >
+      <Container maxWidth='xs' sx={{height: '100%', display: 'flex', alignItems: 'center'}}>
+        <Card sx={{backgroundColor: 'white', p: '24px', width: '100%'}}>
+          {auth}
+        </Card>
+      </Container>
+    </Modal>
+  )
 }
+
+export default Authenticator;
