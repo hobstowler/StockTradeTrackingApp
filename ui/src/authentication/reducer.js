@@ -1,4 +1,6 @@
 const initialState = {
+  supabaseClient: null,
+  session: null,
   user: {
     firstName: 'test',
     lastName: 'mctesterson',
@@ -8,7 +10,7 @@ const initialState = {
   status: {
     isConnected: false,
     isLoaded: true,
-    isLoggedIn: true,
+    isLoggedIn: false,
     processing: false,
   }
 }
@@ -51,6 +53,8 @@ const reducer = (state = initialState, action) => {
     case 'td_auth_completed':
     case 'td_verify_completed':
       return {...state, status: {...state.status, isConnected: true}}
+    case 'set_session':
+      return {...state, session: action.session}
     case 'td_get_token_requested':
     default:
       return state
