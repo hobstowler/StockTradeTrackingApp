@@ -8,7 +8,7 @@ const StockSearch = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [inputVal, setInputVal] = useState('')
   const symbols = useSelector(({stock}) => stock.lookupSymbols)
-  const activeSymbol = useSelector(({stock}) => stock?.activeSymbol)
+  const searchSymbol = useSelector(({stock}) => stock?.searchSymbol)
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch()
 
@@ -22,12 +22,12 @@ const StockSearch = () => {
   }, [searchTerm])
 
   useEffect(() => {
-    if (Object.keys(activeSymbol).length === 0) return
-    setInputVal(`${activeSymbol.symbol} - ${activeSymbol.description}`)
-  }, [activeSymbol])
+    if (!searchSymbol || Object.keys(searchSymbol).length === 0) return
+    setInputVal(`${searchSymbol.symbol} - ${searchSymbol.description}`)
+  }, [searchSymbol])
 
   const handleSearch = (symbol) => {
-    if (symbol?.symbol === undefined) return
+    if (symbol?.symbol === undefined || symbol?.symbol === '') return
 
     setOpen(false)
     dispatch(symbolSearch(symbol.symbol))
@@ -35,6 +35,7 @@ const StockSearch = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (searchTerm.length === 0) return
 
     setOpen(false)
     dispatch(symbolSearch(searchTerm))
@@ -43,7 +44,11 @@ const StockSearch = () => {
   const handleChange = (_, option) => {
     handleSearch(option)
   }
-  const handleInputChange = (_, val) => {
+  const handleInputChange = (_, val, reason) => {
+    if (reason === 'clear') {
+      setSearchTerm('')
+      setOpen(false)
+    }
     setInputVal(val)
   }
 
@@ -76,8 +81,8 @@ const StockSearch = () => {
             }
           />
           <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'end'}}>
-            <Button disabled={!Object.keys(activeSymbol).length > 0}>Add to WatchList</Button>
-            <Button type='submit'>Search</Button>
+            <Button disabled={!searchSymbol || !Object.keys(searchSymbol).length > 0}>Add to WatchList</Button>
+            <Button type='submit' disabled={searchTerm.length === 0}>Search</Button>
           </Box>
         </Container>
       </form>
