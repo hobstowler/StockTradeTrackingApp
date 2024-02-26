@@ -8,6 +8,7 @@ const CompactWatchTab = (props) => {
       {...props}
       sx={{
         ...props.sx,
+        cursor: 'pointer',
         px: '1px',
         py: '12px',
         minWidth: '60px',

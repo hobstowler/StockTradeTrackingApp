@@ -9,7 +9,7 @@ const MarketStatus = () => {
   const theme = useTheme()
 
   useEffect(() => {
-      dispatch(getClock())
+    dispatch(getClock())
   }, [])
 
   const formatStatus = (marketStatus) => {

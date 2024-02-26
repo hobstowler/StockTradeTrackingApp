@@ -6,7 +6,7 @@ import CompactList from "./CompactList";
 import ExpandedList from "./ExpandedList";
 
 const WatchListCard = () => {
-  const {activeGroup, loaded} = useSelector(({stock}) => stock.watchList)
+  const {activeGroup} = useSelector(({stock}) => stock.watchList)
   const [compact, setCompact] = useState(true)
 
   useEffect(() => {
