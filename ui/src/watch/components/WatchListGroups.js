@@ -7,7 +7,7 @@ import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useState} from "react";
 import WatchListCard from "./WatchListCard";
-import {refreshActiveWatchList, setActiveGroup} from "../../stock/actions";
+import {refreshActiveWatchList, refreshEverything, setActiveGroup} from "../../stock/actions";
 
 const WatchListGroups = () => {
   const [tabGroupValue, setTabGroupValue] = useState(0)
@@ -26,7 +26,7 @@ const WatchListGroups = () => {
     dispatch(setActiveGroup(tabGroupValue))
 
     if (tabGroupValue >= 0) {
-      dispatch(refreshActiveWatchList(tabGroupValue))
+      dispatch(refreshEverything())
     }
   }, [tabGroupValue, dispatch])
 
@@ -51,9 +51,8 @@ const WatchListGroups = () => {
         <Tabs
           value={tabGroupValue}
           onChange={handleChange}
-          textColor='white'
           TabIndicatorProps={{style: {background: 'white'}}}
-          sx={{fontWeight: 600}}
+          sx={{fontWeight: 600, "& .Mui-selected": {color: 'white !important'}}}
         >
           {watchGroups.map((group) => {
             return (

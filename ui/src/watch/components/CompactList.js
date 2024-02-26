@@ -20,8 +20,8 @@ const CompactList = () => {
       fontSize: '13px',
       fontWeight: 600
     }}>
-      {activeGroup !== undefined && groups[activeGroup].symbols.map((symbol) => {
-        return <CompactWatchTab sx={{alignItems: 'center'}} children={
+      {activeGroup !== null && groups[activeGroup].symbols.map((symbol) => {
+        return <CompactWatchTab sx={{alignItems: 'center'}} symbol={symbol} children={
           <>
             <Box>{symbol.symbol}</Box>
             <Item item={symbol?.last}/>
@@ -29,7 +29,7 @@ const CompactList = () => {
           </>
         }/>
       })}
-      {activeGroup !== undefined &&
+      {activeGroup !== null &&
         groups[activeGroup].symbols.length < 10 &&
         <CompactWatchTab
           highlightColor={theme.palette.success.main}

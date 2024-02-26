@@ -1,8 +1,8 @@
 const initialState = {
   currentStock: {},
+  activeSymbol: null,
+  searchSymbol: null,
   watchList: {
-    activeSymbol: '',
-    activeGroup: undefined,
     groups: [
       {
         name: 'AI',
@@ -22,15 +22,12 @@ const initialState = {
       {
         name: 'Fintech',
         symbols: [
-          {
-            symbol: 'JPM'
-          }
+          {symbol: 'JPM'}
         ]
       }
     ]
   },
-  lookupSymbols: [],
-  activeSymbol: {}
+  lookupSymbols: []
 }
 
 const reducer = (state = initialState, action) => {
@@ -39,11 +36,6 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         lookupSymbols: action.symbols || []
-      }
-    case 'SEARCH_RETURN':
-      return {
-        ...state,
-        activeSymbol: action.activeSymbol || {}
       }
     case 'CLEAR_SYMBOLS':
       return {
@@ -57,6 +49,16 @@ const reducer = (state = initialState, action) => {
           ...state.watchList,
           activeGroup: action.groupName
         }
+      }
+    case 'SET_SEARCH_SYMBOL':
+      return {
+        ...state,
+        searchSymbol: action.searchSymbol || {}
+      }
+    case 'SET_ACTIVE_SYMBOL':
+      return {
+        ...state,
+        activeSymbol: action.activeSymbol || {}
       }
     case 'LOAD_WATCHLIST_START':
       return {
@@ -77,6 +79,17 @@ const reducer = (state = initialState, action) => {
           ...state.watchList,
           loaded: action.loaded,
           groups: newGroups
+        }
+      }
+    case 'REFRESH_WATCHLIST':
+      console.log(state.watchList.groups)
+      console.log(action.groups)
+      return {
+        ...state,
+        watchList: {
+          ...state.watchList,
+          loaded: true,
+          groups: [...action.groups]
         }
       }
     default:

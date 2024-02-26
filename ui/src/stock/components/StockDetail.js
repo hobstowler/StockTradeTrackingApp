@@ -29,7 +29,7 @@ const StockDetail = () => {
     setPctChange(!pctChange)
   }
 
-  if (Object.keys(stock).length === 0) return
+  if (!stock || Object.keys(stock).length === 0) return
 
   return (
     <Container disableGutters>

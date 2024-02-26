@@ -39,7 +39,10 @@ export const symbolSearch = (term) => (dispatch, state, _) => {
         return
       }
 
-      dispatch({type: 'SEARCH_RETURN', activeSymbol: json?.quotes?.quote})
+      const quote = json?.quotes?.quote
+
+      dispatch(setSearchSymbol(quote))
+      dispatch(setActiveSymbol(quote))
     })
 }
 
@@ -51,11 +54,20 @@ export const setActiveGroup = (groupName) => (dispatch, state, _) => {
   dispatch({type: 'SET_ACTIVE_WATCH_GROUP', 'groupName': groupName})
 }
 
+export const setActiveSymbol = (symbol) => (dispatch, state, _) => {
+  dispatch({type: 'SET_ACTIVE_SYMBOL', activeSymbol: symbol})
+}
+
+export const setSearchSymbol = (symbol) => (dispatch, state, _) => {
+  dispatch({type: 'SET_SEARCH_SYMBOL', searchSymbol: symbol})
+}
+
 export const refreshActiveWatchList = (groupName, refresh = false) => (dispatch, state, _) => {
   if (!refresh) {
     dispatch({type: 'LOAD_WATCHLIST_START'})
   }
   const symbols = state().stock.watchList.groups?.[groupName].symbols.map((symbol) => {return symbol.symbol})
+
   fetch(`${API_ENDPOINT}/quote?q=${symbols.toString()}&greeks=false`)
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
@@ -68,12 +80,74 @@ export const refreshActiveWatchList = (groupName, refresh = false) => (dispatch,
       }
 
       let quotes = json?.quotes?.quote
-      if (typeof quotes === 'object' && !Array.isArray(quotes)) {
-        quotes = [quotes]
+      if (typeof quotes === 'object') {
+        if (!Array.isArray(quotes)) {
+          quotes = [quotes]
+        }
       } else {
         dispatch({type: 'UPDATE_WATCHLIST_ERROR', error: 'error'})
       }
 
       dispatch({type: 'UPDATE_WATCHLIST', loaded: true, groupName: groupName, quotes: quotes})
     })
+}
+
+export const refreshEverything = () => (dispatch, getState, _) => {
+  const state = getState()
+
+  const watchSymbols = state.stock.watchList.groups.map((group) => group.symbols.map((symbol) => symbol.symbol))
+  const symbols = [
+    ...new Set([
+      watchSymbols.flat(),
+      state.stock.activeSymbol?.symbol,
+      state.stock.searchSymbol?.symbol
+    ])
+  ]
+
+  fetch(`${API_ENDPOINT}/quote?q=${symbols.toString()}&greeks=false`)
+    .then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const json = hasJson ? await response.json() : null
+
+      if (!response.ok) {
+        let error = (json && json.error) || response.status
+        dispatch({type: 'REFRESH_ERROR', error: error})
+        return
+      }
+
+      let quotes = json?.quotes?.quote
+      if (typeof quotes !== 'object') {
+        dispatch({type: 'UPDATE_WATCHLIST_ERROR', error: 'error'})
+        return
+      }
+      if (!Array.isArray(quotes)) quotes = [quotes]
+
+      for (const quote of quotes) {
+        if (quote.symbol === state.stock.activeSymbol?.symbol) {
+          dispatch(setActiveSymbol(quote))
+        }
+        if (quote.symbol === state.stock.searchSymbol?.symbol) {
+          dispatch(setSearchSymbol(quote))
+        }
+
+        for (const group of watchSymbols) {
+          const idx = group.indexOf(quote.symbol)
+          if (idx !== -1) {
+            group[idx] = quote
+          }
+        }
+      }
+      const newGroups = []
+      watchSymbols.forEach((group, i) => {
+        newGroups.push({
+          ...state.stock.watchList.groups[i],
+          symbols: group
+        })
+      })
+      dispatch({type: 'REFRESH_WATCHLIST', groups: newGroups})
+
+      // dispatch({type: 'UPDATE_WATCHLIST', loaded: true, groupName: groupName, quotes: quotes})
+    })
+
+  console.log(symbols)
 }
