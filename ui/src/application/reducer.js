@@ -1,5 +1,6 @@
 const initialState = {
-  clock: {}
+  clock: {},
+  page: 'main'
 }
 
 const reducer = (state = initialState, action) => {
@@ -13,6 +14,11 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         clock: {...action.clock}
+      }
+    case 'SET_PAGE':
+      return {
+        ...state,
+        page: action.pageName
       }
     default:
       return state

@@ -15,3 +15,7 @@ export const getClock = () => (dispatch, state, _) => {
       dispatch({type: 'SET_CLOCK', ...json})
     })
 }
+
+export const setPage = (pageName) => (dispatch, state, _) => {
+  dispatch({type: 'SET_PAGE', pageName: pageName})
+}

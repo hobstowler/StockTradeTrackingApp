@@ -3,11 +3,19 @@ import {Link, useMediaQuery} from '@mui/material';
 import {green, grey} from '@mui/material/colors';
 
 import {navLinks} from "../../config/NavigationLinks";
+import {PAGES} from "../../application/constants"
 import MobileNav from "./MobileNav";
+import {setPage} from "../../application/actions";
+import {useDispatch} from "react-redux";
 
 function Navigation() {
   const theme = useTheme();
+  const dispatch = useDispatch()
   const mobileFormat = !useMediaQuery(theme.breakpoints.up('sm'));
+
+  const handleClick = (pageName) => {
+    dispatch(setPage(pageName))
+  }
 
   if (mobileFormat) {
     return <MobileNav />
@@ -23,9 +31,10 @@ function Navigation() {
       justifyContent: {xs: 'center'},
       flexGrow: 1,
     }}>
-      {navLinks.map((link, i) => (
-        <Link
+      {PAGES.map((page, i) => (
+        <Box
           key={i}
+          onClick={() => {handleClick(page)}}
           sx={{
             "&:hover": {
               color: green[900],
@@ -45,11 +54,11 @@ function Navigation() {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
+            cursor: 'pointer'
           }}
-          href={link.url}
         >
-          {link.text}
-        </Link>
+          {page}
+        </Box>
       ))}
     </Box>
   )

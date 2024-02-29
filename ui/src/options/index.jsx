@@ -1,15 +1,14 @@
 import React, {useEffect} from 'react';
+import {useSelector} from "react-redux";
+import {Box} from "@mui/system";
 
-export default function Index() {
-    useEffect(() => {
-    }, [])
+const Index = () => {
+  const activePage = useSelector(({application}) => application.page)
 
     return (
-        <div>
-            <div id='left'>LEFT</div>
-            <div id='center'>CENTER</div>
-            <div id='right'>RIGHT</div>
-        </div>
+        <Box role='tabpanel' hidden={activePage !== 'Options'} className='optionsTab'></Box>
     )
 
 }
+
+export default Index
