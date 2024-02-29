@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {Grid} from "@mui/material";
+import {Box} from "@mui/system";
 
 const Item = (props) => {
   const {starttext = '', endtext = '', item, width = 1, currency = true} = props
@@ -21,7 +21,7 @@ const Item = (props) => {
     setText(`${starttext}${newText}${endtext}`)
   }, [item])
   return (
-    <Grid {...props} item xs={width}>{text}</Grid>
+    <Box {...props} item xs={width}>{text}</Box>
   )
 }
 

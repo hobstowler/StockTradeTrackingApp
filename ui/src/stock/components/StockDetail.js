@@ -4,7 +4,8 @@ import {useState} from "react";
 import Item from "../../shared/components/Item";
 import NorthOutlinedIcon from '@mui/icons-material/NorthOutlined';
 import SouthOutlinedIcon from '@mui/icons-material/SouthOutlined';
-import {Divider} from "@mui/material";
+import {Divider, Grid, Tooltip} from "@mui/material";
+import GridColumn from "../../shared/components/GridColumn";
 
 
 const StockDetail = () => {
@@ -34,58 +35,59 @@ const StockDetail = () => {
   return (
     <Container disableGutters>
       <Divider />
-      <Box
+      <Grid
+        container
+        columns={9}
+        xs={9}
         sx={{
           display: 'flex',
           flexDirection: 'row',
           justifyContent: 'center',
           backgroundColor: theme.palette.grey[50],
           flexGrow: 1,
-          gap: '20px',
           py: '12px',
           p: '4px'
         }}
       >
-        <Box sx={{display: 'flex', lineHeight: '1.1', flexDirection: 'column', alignItems: 'end', fontSize: '13px'}}>
+        <Grid xs={3} sx={{display: 'flex', lineHeight: '1.1', flexDirection: 'column', alignItems: 'end', fontSize: '13px', px: '8px'}}>
           {/*<Box sx={{fontWeight: 700}}>Last:</Box>*/}
+          <Tooltip title={stock?.description} placement='top' arrow>
+            <Box sx={{fontWeight: 600}}>{stock?.symbol}</Box>
+          </Tooltip>
           <Box sx={{fontWeight: 600, fontSize: '28px', color: lastColor()}}>
             <Item item={stock?.last} />
           </Box>
           <Box sx={{color: stock?.change < 0 ? down : (stock !== 0 ? up : 'inherit')}}>
             <Item item={pctChange ? stock.change_percentage : stock.change} currency={!pctChange}/>
           </Box>
-        </Box>
-        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+        </Grid>
+        <GridColumn headerText='High/Low'>
+          <Box sx={{display: 'flex', alignItems: 'end', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <NorthOutlinedIcon color='success' fontSize='xs'/>
+            <Item item={stock?.high || stock?.close || '0'}/>
+          </Box>
+          <Box sx={{display: 'flex', alignItems: 'end', flexDirection: 'row', gap: '2px', color: stock?.last <= stock?.low ? down : 'inherit'}}>
+            <SouthOutlinedIcon color='error' fontSize='xs' />
+            <Item item={stock?.low || '0'} />
+          </Box>
+        </GridColumn>
+        <GridColumn headerText='52 Week'>
           <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
-            <Box sx={{display: 'flex', alignItems: 'center'}}>
-              <NorthOutlinedIcon color='success' fontSize='xs'/>
-            </Box>
-            <Box><Item item={stock?.high || stock?.close || '0'}/></Box>
+            <Item item={stock?.week_52_high} />
           </Box>
           <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last <= stock?.low ? down : 'inherit'}}>
-            <Box sx={{display: 'flex', alignItems: 'end'}}>
-              <SouthOutlinedIcon color='error' fontSize='xs' />
-            </Box>
-            <Box><Item item={stock?.low || '0'} /></Box>
+            <Item item={stock?.week_52_low} />
           </Box>
-        </Box>
-        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
+        </GridColumn>
+        <GridColumn headerText='Volume'>
           <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
-            <Box><Item item={stock?.week_52_high} /></Box>
+            <Item item={stock?.volume} currency={false} />
           </Box>
-          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last <= stock?.low ? down : 'inherit'}}>
-            <Box><Item item={stock?.week_52_low} /></Box>
+          <Box sx={{display: 'flex',flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
+            <Item item={stock?.last_volume} currency={false} />
           </Box>
-        </Box>
-        <Box sx={{mt: '4px', fontSize: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
-          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
-            <Box><Item item={stock?.volume} currency={false} /></Box>
-          </Box>
-          <Box sx={{display: 'flex', flexDirection: 'row', gap: '2px', color: stock?.last >= stock?.high ? up : 'inherit'}}>
-            <Box><Item item={stock?.last_volume} currency={false} /></Box>
-          </Box>
-        </Box>
-      </Box>
+        </GridColumn>
+      </Grid>
     </Container>
   )
 
