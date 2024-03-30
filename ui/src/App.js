@@ -30,8 +30,17 @@ const supabase = createClient(PROJECT_URL, API_KEY)
 const App = () => {
   const [displayLogin, setDisplayLogin] = useState(false)
   const {lastUpdate} = useSelector(({stock}) => stock.watchList)
+  const {session} = useSelector(({authentication}) => authentication)
+  const {clock} = useSelector(({application}) => application)
+  const {account: accountStream, market: marketStream} = useSelector(({application}) => application.streaming)
   const updateRef = useRef(null)
   const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (lastUpdate === null) {
+      dispatch(refreshEverything())
+    }
+  }, [session?.access_token])
 
   useEffect(() => {
     updateRef.current = lastUpdate
@@ -50,6 +59,10 @@ const App = () => {
   }, [])
 
   useEffect(() => {
+    if (marketStream) return
+
+    // dispatch(refreshEverything())
+
     const intervalId = setInterval(() => {
       const diffInSeconds = (new Date() - updateRef.current) / 1000
       if (diffInSeconds > 14) {
@@ -58,7 +71,7 @@ const App = () => {
     }, 15000)
 
     return () => clearInterval(intervalId)
-  }, [])
+  }, [marketStream, clock])
 
   const login = () => {
     setDisplayLogin(true)

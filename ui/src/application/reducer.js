@@ -1,6 +1,11 @@
 const initialState = {
-  clock: {},
-  page: 'main'
+  clock: null,
+  page: 'main',
+  streaming: {
+    account: true,
+    market: true
+  },
+  darkMode: false
 }
 
 const reducer = (state = initialState, action) => {
@@ -19,6 +24,27 @@ const reducer = (state = initialState, action) => {
       return {
         ...state,
         page: action.pageName
+      }
+    case 'SET_MARKET_STREAM':
+      return {
+        ...state,
+        streaming: {
+          ...state.streaming,
+          market: action.state
+        }
+      }
+    case 'SET_ACCOUNT_STREAM':
+      return {
+        ...state,
+        streaming: {
+          ...state.streaming,
+          account: action.state
+        }
+      }
+    case 'SET_DARK_MODE':
+      return {
+        ...state,
+        darkMode: action.darkMode
       }
     default:
       return state
