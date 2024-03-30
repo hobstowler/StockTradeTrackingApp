@@ -95,6 +95,13 @@ export const refreshActiveWatchList = (groupName, refresh = false) => (dispatch,
 export const refreshEverything = () => (dispatch, getState, _) => {
   const state = getState()
 
+  const token = state.authentication?.session?.access_token
+
+  if (token === undefined || token === null) {
+    console.log('bad token')
+    return
+  }
+
   const watchSymbols = state.stock.watchList.groups.map((group) => group.symbols.map((symbol) => symbol.symbol))
   const symbols = [
     ...new Set([
@@ -104,7 +111,11 @@ export const refreshEverything = () => (dispatch, getState, _) => {
     ])
   ]
 
-  fetch(`${API_ENDPOINT}/quote?q=${symbols.toString()}&greeks=false`)
+  fetch(`${API_ENDPOINT}/quote?q=${symbols.toString()}&greeks=false`,{
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
     .then(async response => {
       const hasJson = response.headers.get('content-type')?.includes('application/json')
       const json = hasJson ? await response.json() : null
@@ -117,7 +128,7 @@ export const refreshEverything = () => (dispatch, getState, _) => {
 
       let quotes = json?.quotes?.quote
       if (typeof quotes !== 'object') {
-        dispatch({type: 'UPDATE_WATCHLIST_ERROR', error: 'error'})
+        dispatch({type: 'REFRESH_ERROR', error: 'error'})
         return
       }
       if (!Array.isArray(quotes)) quotes = [quotes]
@@ -145,9 +156,5 @@ export const refreshEverything = () => (dispatch, getState, _) => {
         })
       })
       dispatch({type: 'REFRESH_WATCHLIST', groups: newGroups})
-
-      // dispatch({type: 'UPDATE_WATCHLIST', loaded: true, groupName: groupName, quotes: quotes})
     })
-
-  console.log(symbols)
 }

@@ -4,9 +4,9 @@ Transform: AWS::Serverless-2016-10-31
 Globals:
   Api:
     Cors:
-      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowMethods: "'*'"
       AllowOrigin: "'*'"
-      AllowHeaders: "'content-type'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
   Function:
     Timeout: 3
     MemorySize: 128
@@ -20,11 +20,30 @@ Globals:
         TRADIER_PROD_ACCESS_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_PROD_ACCESS_TOKEN}}'
         TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
         TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
+        SUPABASE_JWT_SECRET: '{{resolve:secretsmanager:SUPABASE:SecretString:SUPABASE_JWT_SECRET}}'
 
     LoggingConfig:
       LogFormat: JSON
 
+
+
 Resources:
+  StockAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Cors:
+        AllowMethods: "'*'"
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      Name: Stock Trading API
+      StageName: Prod
+      Auth:
+        AddDefaultAuthorizerToCorsPreflight: false
+        DefaultAuthorizer: SupabaseAuthorizer
+        Authorizers:
+          SupabaseAuthorizer:
+            FunctionPayloadType: TOKEN
+            FunctionArn: !GetAtt SupabaseAuthorizerFunction.Arn
   GetClockFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -34,6 +53,9 @@ Resources:
         Api:
           Type: Api
           Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
             Path: /clock
             Method: GET
   GetSymbolsFunction:
@@ -45,6 +67,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /symbol/{security_type}
             Method: GET
   GetOptionSymbolsFunction:
@@ -56,6 +79,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /option
             Method: GET
   GetCompaniesFunction:
@@ -67,6 +91,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /search
             Method: GET
   GetQuoteFunction:
@@ -78,6 +103,7 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /quote
             Method: GET
   GetOptionChainFunction:
@@ -89,9 +115,10 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /option/chains
             Method: GET
-  GetOptionExpirations:
+  GetOptionExpirationsFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/handlers/
@@ -100,8 +127,56 @@ Resources:
         Api:
           Type: Api
           Properties:
+            RestApiId: !Ref StockAPI
             Path: /option/expirations
             Method: GET
+  GetMarketStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetMarketStream.get_market_stream
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /stream/market
+            Method: POST
+  GetAccountStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: GetAccountStream.get_account_stream
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /stream/account
+            Method: POST
+  AddWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: AddWatchList.add_watch_list
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /watch/{sub}/{name}
+            Method: POST
+  SupabaseAuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/
+      Handler: AuthenticateWithSupabase.authenticate_with_supabase
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /auth/supabase
+            Method: POST
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

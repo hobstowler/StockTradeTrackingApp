@@ -3,6 +3,7 @@ const initialState = {
   activeSymbol: null,
   searchSymbol: null,
   watchList: {
+    lastUpdate: null,
     groups: [
       {
         name: 'AI',
@@ -78,16 +79,16 @@ const reducer = (state = initialState, action) => {
         watchList: {
           ...state.watchList,
           loaded: action.loaded,
+          lastUpdate: new Date(),
           groups: newGroups
         }
       }
     case 'REFRESH_WATCHLIST':
-      console.log(state.watchList.groups)
-      console.log(action.groups)
       return {
         ...state,
         watchList: {
           ...state.watchList,
+          lastUpdate: new Date(),
           loaded: true,
           groups: [...action.groups]
         }
