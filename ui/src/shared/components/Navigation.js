@@ -1,8 +1,7 @@
 import {Box, useTheme} from "@mui/system";
-import {Link, useMediaQuery} from '@mui/material';
+import {useMediaQuery} from '@mui/material';
 import {green, grey} from '@mui/material/colors';
 
-import {navLinks} from "../../config/NavigationLinks";
 import {PAGES} from "../../application/constants"
 import MobileNav from "./MobileNav";
 import {setPage} from "../../application/actions";
