@@ -1,15 +1,12 @@
 import React, {useEffect} from 'react';
+import {useSelector} from "react-redux";
+import {Box} from "@mui/system";
 
 function Index() {
-    useEffect(() => {
-    }, [])
+  const activePage = useSelector(({application}) => application.page)
 
     return (
-        <div>
-            <div id='left'>left</div>
-            <div id='center'>center</div>
-            <div id='right'>right</div>
-        </div>
+      <Box role='tabpanel' hidden={activePage !== 'WatchList'} className='watchListTab'></Box>
     )
 }
 

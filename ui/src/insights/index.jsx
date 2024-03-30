@@ -1,11 +1,11 @@
-import {Container} from "@mui/system";
+import {Box, Container} from "@mui/system";
+import {useSelector} from "react-redux";
 
 const Index = () => {
+  const activePage = useSelector(({application}) => application.page)
 
   return (
-    <Container>
-
-    </Container>
+    <Box role='tabpanel' hidden={activePage !== 'Insights'} className='insightsTab'></Box>
   )
 }
 

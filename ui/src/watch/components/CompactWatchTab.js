@@ -1,13 +1,22 @@
 import {Box, useTheme} from "@mui/system";
+import {setActiveSymbol} from "../../stock/actions";
+import {useDispatch} from "react-redux";
 
 const CompactWatchTab = (props) => {
   const theme = useTheme()
+  const dispatch = useDispatch()
+
+  const handleClick = () => {
+    dispatch(setActiveSymbol(props.symbol))
+  }
 
   return (
     <Box
+      onClick={handleClick}
       {...props}
       sx={{
         ...props.sx,
+        cursor: 'pointer',
         px: '1px',
         py: '12px',
         minWidth: '60px',

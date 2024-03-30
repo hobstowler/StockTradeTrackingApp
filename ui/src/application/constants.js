@@ -1,0 +1,1 @@
+export const PAGES = ['Main', 'Stocks', 'Options', 'WatchList', 'Insights']

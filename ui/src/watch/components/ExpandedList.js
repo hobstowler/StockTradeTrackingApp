@@ -1,7 +1,7 @@
 import {Grid} from "@mui/material";
 import {useSelector} from "react-redux";
 
-const ExpandedList = ({}) => {
+const ExpandedList = () => {
   const {groups, activeGroup} = useSelector(({stock}) => stock.watchList)
 
   return (

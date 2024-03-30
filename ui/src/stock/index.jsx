@@ -5,15 +5,14 @@ import StockSearch from "./components/StockSearch";
 import StockGraph from "./components/StockGraph";
 import StockDetail from "./components/StockDetail";
 import WatchListGroups from "../watch/components/WatchListGroups";
+import {useSelector} from "react-redux";
 
 const Index = () => {
-  const theme = useTheme()
-  const md = theme.breakpoints.values['md']
-  const lg = theme.breakpoints.values['lg']
+  const activePage = useSelector(({application}) => application.page)
 
     return (
-      <Container className='stockTab' sx={{maxWidth: {xs: md, lg: lg}}}>
-        <Container disableGutters sx={{flexGrow: 1, maxWidth: {xs: md, lg: lg}}}>
+      <Box role='tabpanel' hidden={activePage !== 'Stocks'} className='stockTab'>
+        <Container disableGutters sx={{flexGrow: 1, maxWidth: {xs: 'md', lg: 'lg'}}}>
           <Card
             sx={{
               mt: '32px',
@@ -36,7 +35,7 @@ const Index = () => {
         <Box>
           <StockGraph />
         </Box>
-      </Container>
+      </Box>
     )
 }
 

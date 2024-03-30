@@ -1,16 +1,16 @@
 import AppBar from '@mui/material/AppBar';
 import {Box, useTheme} from "@mui/system";
-import {Button, Card, CircularProgress, IconButton, InputAdornment, Tab, Tabs, TextField} from "@mui/material";
+import {Button, CircularProgress, IconButton, InputAdornment, Tab, Tabs, TextField} from "@mui/material";
 import AddCircleOutlineOutlinedIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useState} from "react";
 import WatchListCard from "./WatchListCard";
-import {refreshActiveWatchList, setActiveGroup} from "../../stock/actions";
+import {refreshEverything, setActiveGroup} from "../../stock/actions";
 
-const WatchListGroups = (stocks = true) => {
-  const [tabGroupValue, setTabGroupValue] = useState(false)
+const WatchListGroups = () => {
+  const [tabGroupValue, setTabGroupValue] = useState(0)
   const [tabSymbolValue, setTabSymbolValue] = useState(false)
   const [newGroup, setNewGroup] = useState(false)
   const [newGroupName, setNewGroupName] = useState('')
@@ -25,17 +25,15 @@ const WatchListGroups = (stocks = true) => {
     if (tabGroupValue === false) return
     dispatch(setActiveGroup(tabGroupValue))
 
-    if (tabGroupValue >= 0) {
-      dispatch(refreshActiveWatchList(tabGroupValue))
-    }
-  }, [tabGroupValue])
+    // if (tabGroupValue >= 0) {
+    //   dispatch(refreshEverything())
+    // }
+  }, [tabGroupValue, dispatch])
 
   const handleChange = (e, val) => {
     setTabGroupValue(val)
     setTabSymbolValue(false)
   }
-
-  const handleNewGroup = () => {}
 
   return (
     <Box sx={{borderBottomLeftRadius: 0, borderTopLeftRadius: 0, borderLeft: `1px solid ${theme.palette.grey[200]}`, minWidth: '680px', maxWidth: '680px'}}>
@@ -53,9 +51,8 @@ const WatchListGroups = (stocks = true) => {
         <Tabs
           value={tabGroupValue}
           onChange={handleChange}
-          textColor='white'
           TabIndicatorProps={{style: {background: 'white'}}}
-          sx={{fontWeight: 600}}
+          sx={{fontWeight: 600, "& .Mui-selected": {color: 'white !important'}}}
         >
           {watchGroups.map((group) => {
             return (
