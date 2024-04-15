@@ -1,7 +1,7 @@
 import {Box} from "@mui/system";
 import {grey} from "@mui/material/colors";
 import {GiHamburgerMenu} from "react-icons/gi";
-import AccountMenu from "../../account/components/AccountMenu";
+import AccountMenu from "../../../account/components/AccountMenu";
 import {useState} from "react";
 
 const MobileNav = () => {

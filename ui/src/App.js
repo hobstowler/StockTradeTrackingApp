@@ -1,19 +1,15 @@
 import './App.css';
-import Home from "./application/components/Home";
-import Header from "./shared/components/Header";
-
+import Header from "./shared/components/header/Header";
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import Footer from "./shared/components/Footer";
-import {default as Watch} from "./watch";
 import React, {useEffect, useRef, useState} from "react";
+import {default as Home} from "./application";
 import {default as Stocks} from "./stock";
 import {default as Options} from "./options";
-import {default as Crypto} from "./crypto";
 import {default as Insights} from "./insights";
-import {default as Account} from "./account";
+import {default as Watch} from "./watch";
 import AccountHeader from "./authentication/components/AccountHeader";
 import {useDispatch, useSelector} from "react-redux";
-import MarketStatus from "./shared/components/MarketStatus";
+import MarketStatus from "./application/components/MarketStatus";
 import {createClient} from "@supabase/supabase-js";
 import {ThemeSupa} from "@supabase/auth-ui-shared";
 import {Auth} from "@supabase/auth-ui-react";
@@ -21,6 +17,8 @@ import {setSession} from "./authentication/actions";
 import Authenticator from "./authentication/components/Authenticator";
 import {refreshEverything} from "./stock/actions";
 import {Container} from "@mui/system";
+import SchwabAuth from "./authentication/components/schwab/SchwabAuth";
+import {getClock} from "./application/actions";
 
 const PROJECT_URL = process.env.REACT_APP_SUPABASE_PROJECT_URL
 const API_KEY = process.env.REACT_APP_SUPABASE_API_KEY
@@ -37,8 +35,13 @@ const App = () => {
   const dispatch = useDispatch()
 
   useEffect(() => {
+    console.log('ok')
+  }, [dispatch])
+
+  useEffect(() => {
     if (lastUpdate === null) {
       dispatch(refreshEverything())
+    dispatch(getClock())
     }
   }, [session?.access_token])
 
@@ -83,28 +86,38 @@ const App = () => {
 
   return (
     <>
-      <Authenticator
-        displayLogin={displayLogin}
-        setDisplayLogin={setDisplayLogin}
-        auth={
-          <Auth
-            supabaseClient={supabase}
-            appearance={{theme: ThemeSupa}}
-            providers={['github', 'google', 'linkedin_oidc']}
-          />
-        }
-      />
-      <AccountHeader login={login} logout={logout}/>
-      <Header />
-      <MarketStatus />
+      <BrowserRouter>
+        <Routes>
+          <Route path='/' element={
+            <>
+              <Authenticator
+                displayLogin={displayLogin}
+                setDisplayLogin={setDisplayLogin}
+                auth={
+                  <Auth
+                    supabaseClient={supabase}
+                    appearance={{theme: ThemeSupa}}
+                    providers={['github', 'google', 'linkedin_oidc']}
+                  />
+                }
+              />
+              <AccountHeader login={login} logout={logout}/>
+              <Header />
+              <MarketStatus />
 
-      <Container sx={{maxWidth: {xs: 'md', lg: 'lg'}}}>
-        <Home/>
-        <Stocks/>
-        <Options/>
-        <Watch/>
-        <Insights/>
-      </Container>
+              <Container sx={{maxWidth: {xs: 'md', lg: 'lg'}}}>
+                <Home/>
+                <Stocks/>
+                <Options/>
+                <Watch/>
+                <Insights/>
+              </Container>
+            </>
+          } />
+          <Route path='/auth/schwab' element={<SchwabAuth />} />
+          <Route path='/auth/schwab/return_auth' element={<Stocks />} />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }

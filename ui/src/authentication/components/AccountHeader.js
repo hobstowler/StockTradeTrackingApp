@@ -1,18 +1,36 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {Box, Container, useTheme} from "@mui/system";
-import {Avatar, Button, useMediaQuery} from '@mui/material';
-import {useDispatch, useSelector} from "react-redux";
+import {Avatar, Button, IconButton, useMediaQuery} from '@mui/material';
+import {useSelector} from "react-redux";
 import AccountMenu from "../../account/components/AccountMenu";
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
+import {useNavigate, useSearchParams} from "react-router-dom";
 
 const AccountHeader = ({login, logout}) => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [params, setParams] = useState(null)
   const [anchor, setAnchor] = useState(null)
 
   const {session, status} = useSelector(({authentication}) => authentication)
   const user = session?.user
 
   const theme = useTheme();
+  const navigate = useNavigate()
   const smallScreen = useMediaQuery(theme.breakpoints.up('sm'))
+
+  useEffect(() => {
+    const params = new Map()
+    searchParams.forEach((val, key) => {
+      params.set(key, val)
+    })
+    setParams(params)
+  }, [searchParams])
+
+  useEffect(() => {
+    if (params === null) return
+
+  }, [params])
 
   const openMenu = (e) => {
     setAnchor(e.currentTarget)
@@ -49,6 +67,20 @@ const AccountHeader = ({login, logout}) => {
             <LoginOutlinedIcon/>
           </Button>
         }
+        <IconButton
+          size='small'
+          onClick={() => {navigate('/auth/schwab')}}
+          sx={{
+            ml: '12px',
+            backgroundColor: theme.palette.grey[50],
+            '&:hover': {
+              backgroundColor: theme.palette.grey[100]
+            },
+            '& > svg': {
+              color: theme.palette.error.main
+            }}}>
+          <LinkOffIcon color='red' />
+        </IconButton>
         <AccountMenu anchor={anchor} onClose={closeMenu} logout={logout}/>
       </Box>
     </Container>

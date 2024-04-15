@@ -11,12 +11,9 @@ const Item = (props) => {
       return
     }
 
-    let newText = ''
-    if (currency) {
-      newText = item.toLocaleString("en-US", {style:"currency", currency:"USD"})
-    } else {
-      newText = item.toLocaleString()
-    }
+    let newText = currency ?
+      item.toLocaleString("en-US", {style:"currency", currency:"USD"})
+      : item.toLocaleString()
 
     setText(`${starttext}${newText}${endtext}`)
   }, [item])

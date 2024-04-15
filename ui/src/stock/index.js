@@ -1,6 +1,6 @@
 import React from 'react';
 import {Card, Container} from "@mui/material";
-import {Box, useTheme} from "@mui/system";
+import {Box} from "@mui/system";
 import StockSearch from "./components/StockSearch";
 import StockGraph from "./components/StockGraph";
 import StockDetail from "./components/StockDetail";

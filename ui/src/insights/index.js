@@ -1,4 +1,4 @@
-import {Box, Container} from "@mui/system";
+import {Box} from "@mui/system";
 import {useSelector} from "react-redux";
 
 const Index = () => {

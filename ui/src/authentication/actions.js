@@ -1,3 +1,5 @@
+import {API_ENDPOINT} from "../constants";
+
 export const setSession =
   (session) =>
   (dispatch, state, _) => {
@@ -224,3 +226,18 @@ export const tdVerify = () =>
 export const refreshAuth = () => {
 
 };
+
+export const getAuthUrl = () => {
+  return fetch(`${API_ENDPOINT}/auth/schwab/url`)
+    .then(async response => {
+      const hasJson = response.headers.get('content-type')?.includes('application/json')
+      const data = hasJson ? await response.json() : null
+
+      if (!response.ok) {
+        let error = (data && data.error) || response.status
+        throw new Error(error)
+      }
+
+      return data.url
+    })
+}

@@ -1,11 +1,11 @@
-import {API_ENDPOINT} from "../constants";
+import {TRADIER_API_ENDPOINT} from "../constants";
 
 export const getClock = () => (dispatch, state, _) => {
   const token = state().authentication.session?.access_token
 
   if (token === undefined || token === null) return
 
-  fetch(`${API_ENDPOINT}/clock`, {
+  fetch(`${TRADIER_API_ENDPOINT}/clock`, {
     headers: {
       Authorization: `Bearer ${token}`
     }

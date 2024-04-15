@@ -4,7 +4,7 @@ import {green} from '@mui/material/colors';
 
 const Header = () => {
   return (
-    <Container className='header' maxWidth={"lg"}>
+    <Container className='header-container' maxWidth={"lg"}>
       <Box sx={{
         display: 'flex',
         flexDirection: {xs: 'row', sm: 'column', md: 'row'},

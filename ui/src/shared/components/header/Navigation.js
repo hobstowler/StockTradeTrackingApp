@@ -2,9 +2,9 @@ import {Box, useTheme} from "@mui/system";
 import {useMediaQuery} from '@mui/material';
 import {green, grey} from '@mui/material/colors';
 
-import {PAGES} from "../../application/constants"
+import {PAGES} from "../../../application/constants"
 import MobileNav from "./MobileNav";
-import {setPage} from "../../application/actions";
+import {setPage} from "../../../application/actions";
 import {useDispatch} from "react-redux";
 
 function Navigation() {
