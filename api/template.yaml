@@ -1,14 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  TradierBasePath:
-    Type: String
-    Default: /tradier
-  SchwabBasePath:
-    Type: String
-    Default: /schwab
-
 Globals:
   Api:
     Cors:
@@ -23,13 +15,15 @@ Globals:
     - x86_64
     Environment:
       Variables:
+        SCHWAB_API_BASE_URL: 'https://api.schwabapi.com/v1'
         TRADIER_PROD_ENDPOINT: 'https://api.tradier.com'
         TRADIER_SANDBOX_ENDPOINT: 'https://sandbox.tradier.com'
         TRADIER_PROD_ACCESS_TOKEN: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_PROD_ACCESS_TOKEN}}'
         TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
         TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
         SUPABASE_JWT_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_JWT_SECRET}}'
-
+        SCHWAB_APP_KEY: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_APP_KEY}}'
+        SCHWAB_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_SECRET}}'
     LoggingConfig:
       LogFormat: JSON
 
@@ -63,6 +57,130 @@ Resources:
           Properties:
             Path: /auth/supabase
             Method: POST
+  AddCustomPositionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddCustomPosition.add_custom_position
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position
+            Method: POST
+  DeleteCustomPositionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteCustomPosition.delete_custom_position
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position/{position_id}
+            Method: DELETE
+  GetAllCustomPositionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: GetAllCustomPositions.get_all_custom_positions
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position
+            Method: GET
+  AddCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddCustomWatchList.add_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist
+            Method: POST
+  AddToCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddToCustomWatchList.add_to_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}/position
+            Method: POST
+  DeleteCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteCustomWatchList.delete_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}
+            Method: DELETE
+  DeleteFromCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteFromCustomWatchList.delete_from_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}/position/{position_id}
+            Method: DELETE
+  GetAllCustomWatchListsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: GetAllCustomWatchLists.get_all_custom_watchlists
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist
+            Method: GET
+  GetSchwabAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/schwab/auth
+      Handler: GetAuthUrl.get_auth_url
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
+            Path: /auth/schwab/url
+            Method: GET
+  GetSchwabTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/schwab/auth
+      Handler: GetAuthToken.get_auth_token
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
+            Path: /auth/schwab/token
+            Method: GET
   GetTradierClockFunction:
     Type: AWS::Serverless::Function
     Properties:
