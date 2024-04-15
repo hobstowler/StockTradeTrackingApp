@@ -1,5 +1,6 @@
-import requests
 import os
+
+import requests
 
 
 def get_market_stream(event, context):
