@@ -1,4 +1,4 @@
-def get_watch_list(event, context):
+def get_all_custom_watchlists(event, context):
 
     return {
         "statusCode": 200,

@@ -1,4 +1,4 @@
-def add_watch_list(event, context):
+def add_custom_watchlist(event, context):
     sub = event.pathParameters.get('sub', 0)
     name = event.pathParameters.get('name', None)
 

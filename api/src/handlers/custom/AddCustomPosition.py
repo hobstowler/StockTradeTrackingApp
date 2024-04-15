@@ -1,4 +1,4 @@
-def delete_watch_list(event, context):
+def add_custom_position(event, context):
     return {
         "statusCode": 200,
         'headers': {
