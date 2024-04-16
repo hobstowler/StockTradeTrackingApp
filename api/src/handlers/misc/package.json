@@ -1,0 +1,7 @@
+{
+  "name": "ui",
+  "version": "0.1.0",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.7"
+  }
+}

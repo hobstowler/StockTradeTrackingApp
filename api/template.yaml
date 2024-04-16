@@ -22,6 +22,8 @@ Globals:
         TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
         TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
         SUPABASE_JWT_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_JWT_SECRET}}'
+        SUPABASE_URL: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_URL}}'
+        SUPABASE_API_KEY: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_API_KEY}}'
         SCHWAB_APP_KEY: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_APP_KEY}}'
         SCHWAB_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_SECRET}}'
     LoggingConfig:
@@ -46,6 +48,17 @@ Resources:
           SupabaseAuthorizer:
             FunctionPayloadType: TOKEN
             FunctionArn: !GetAtt SupabaseAuthorizerFunction.Arn
+  SupabaseKeepAliveFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs18.x
+      CodeUri: src/handlers/misc
+      Handler: SupabaseKeepAlive.handler
+      Events:
+        InvocationLevel:
+          Type: Schedule
+          Properties:
+            Schedule: cron(0 1 * * ? *)
   SupabaseAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
