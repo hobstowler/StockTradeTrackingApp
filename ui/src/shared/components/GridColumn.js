@@ -1,5 +1,4 @@
 import {Box} from "@mui/system";
-import Item from "./Item";
 import {Grid} from "@mui/material";
 
 const GridColumn = ({children, headerText, headerDecoration = 'underline'}) => {

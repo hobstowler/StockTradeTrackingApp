@@ -1,0 +1,1 @@
+export const SCHWAB_AUTH_URL = 'https://api.schwabapi.com/v1/oauth/authorize?response_type=code&client_id=rYBN8rCKh2Uy3V0AHDRbWjA2vMnXvGBF&redirect_uri=https://127.0.0.1:3000'

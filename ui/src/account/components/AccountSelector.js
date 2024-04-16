@@ -25,7 +25,7 @@ const AccountSelector = () => {
   }
 
   return (
-    <Container maxWidth={"md"}>
+    <Container maxWidth={"md"} className='account-selector-container'>
       <Box sx={{display: 'flex', alignItems: 'center', justifyContent: 'right', mr: '20px', mt: '20px'}}>
         <Box sx={{mr: '15px', fontSize: '15px', pb: '5px', color: 'darkgrey'}}>
           Active AccountHeader:

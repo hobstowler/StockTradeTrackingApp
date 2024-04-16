@@ -1,7 +1,7 @@
-import json
-import os
-import jwt
 import logging
+import os
+
+import jwt
 
 logger = logging.getLogger()
 logger.setLevel('INFO')

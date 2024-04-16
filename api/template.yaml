@@ -15,13 +15,17 @@ Globals:
     - x86_64
     Environment:
       Variables:
+        SCHWAB_API_BASE_URL: 'https://api.schwabapi.com/v1'
         TRADIER_PROD_ENDPOINT: 'https://api.tradier.com'
         TRADIER_SANDBOX_ENDPOINT: 'https://sandbox.tradier.com'
-        TRADIER_PROD_ACCESS_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_PROD_ACCESS_TOKEN}}'
-        TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
-        TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:TRADIER:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
-        SUPABASE_JWT_SECRET: '{{resolve:secretsmanager:SUPABASE:SecretString:SUPABASE_JWT_SECRET}}'
-
+        TRADIER_PROD_ACCESS_TOKEN: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_PROD_ACCESS_TOKEN}}'
+        TRADIER_SANDBOX_ACCOUNT_NO: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_ACCOUNT_NO}}'
+        TRADIER_SANDBOX_API_TOKEN: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:TRADIER_SANDBOX_API_TOKEN}}'
+        SUPABASE_JWT_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_JWT_SECRET}}'
+        SUPABASE_URL: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_URL}}'
+        SUPABASE_API_KEY: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SUPABASE_API_KEY}}'
+        SCHWAB_APP_KEY: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_APP_KEY}}'
+        SCHWAB_SECRET: '{{resolve:secretsmanager:STOCKTRADEAPP:SecretString:SCHWAB_SECRET}}'
     LoggingConfig:
       LogFormat: JSON
 
@@ -44,128 +48,17 @@ Resources:
           SupabaseAuthorizer:
             FunctionPayloadType: TOKEN
             FunctionArn: !GetAtt SupabaseAuthorizerFunction.Arn
-  GetClockFunction:
+  SupabaseKeepAliveFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: src/handlers/
-      Handler: GetClock.get_clock
+      Runtime: nodejs18.x
+      CodeUri: src/handlers/misc
+      Handler: SupabaseKeepAlive.handler
       Events:
-        Api:
-          Type: Api
+        InvocationLevel:
+          Type: Schedule
           Properties:
-            Auth:
-              Authorizer: NONE
-            RestApiId: !Ref StockAPI
-            Path: /clock
-            Method: GET
-  GetSymbolsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetSymbols.get_symbols
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /symbol/{security_type}
-            Method: GET
-  GetOptionSymbolsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetOptionSymbols.get_option_symbols
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /option
-            Method: GET
-  GetCompaniesFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetCompanies.get_companies
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /search
-            Method: GET
-  GetQuoteFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetQuotes.get_quotes
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /quote
-            Method: GET
-  GetOptionChainFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetOptionChains.get_option_chains
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /option/chains
-            Method: GET
-  GetOptionExpirationsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetOptionExpirations.get_option_expirations
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /option/expirations
-            Method: GET
-  GetMarketStreamFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetMarketStream.get_market_stream
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /stream/market
-            Method: POST
-  GetAccountStreamFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: GetAccountStream.get_account_stream
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /stream/account
-            Method: POST
-  AddWatchListFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: src/handlers/
-      Handler: AddWatchList.add_watch_list
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            RestApiId: !Ref StockAPI
-            Path: /watch/{sub}/{name}
-            Method: POST
+            Schedule: cron(0 1 * * ? *)
   SupabaseAuthorizerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -177,6 +70,252 @@ Resources:
           Properties:
             Path: /auth/supabase
             Method: POST
+  AddCustomPositionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddCustomPosition.add_custom_position
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position
+            Method: POST
+  DeleteCustomPositionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteCustomPosition.delete_custom_position
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position/{position_id}
+            Method: DELETE
+  GetAllCustomPositionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: GetAllCustomPositions.get_all_custom_positions
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/position
+            Method: GET
+  AddCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddCustomWatchList.add_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist
+            Method: POST
+  AddToCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: AddToCustomWatchList.add_to_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}/position
+            Method: POST
+  DeleteCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteCustomWatchList.delete_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}
+            Method: DELETE
+  DeleteFromCustomWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: DeleteFromCustomWatchList.delete_from_custom_watchlist
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist/{watchlist_id}/position/{position_id}
+            Method: DELETE
+  GetAllCustomWatchListsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/custom/
+      Handler: GetAllCustomWatchLists.get_all_custom_watchlists
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /custom/watchlist
+            Method: GET
+  GetSchwabAuthUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/schwab/auth
+      Handler: GetAuthUrl.get_auth_url
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
+            Path: /auth/schwab/url
+            Method: GET
+  GetSchwabTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/schwab/auth
+      Handler: GetAuthToken.get_auth_token
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
+            Path: /auth/schwab/token
+            Method: GET
+  GetTradierClockFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetClock.get_clock
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Auth:
+              Authorizer: NONE
+            RestApiId: !Ref StockAPI
+            Path: /tradier/clock
+            Method: GET
+  GetTradierSymbolsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetSymbols.get_symbols
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/symbol/{security_type}
+            Method: GET
+  GetTradierOptionSymbolsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetOptionSymbols.get_option_symbols
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/option
+            Method: GET
+  GetTradierCompaniesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetCompanies.get_companies
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/search
+            Method: GET
+  GetTradierQuoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetQuotes.get_quotes
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/quote
+            Method: GET
+  GetTradierOptionChainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetOptionChains.get_option_chains
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/option/chains
+            Method: GET
+  GetTradierOptionExpirationsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetOptionExpirations.get_option_expirations
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/option/expirations
+            Method: GET
+  GetTradierMarketStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetMarketStream.get_market_stream
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/stream/market
+            Method: POST
+  GetTradierAccountStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: GetAccountStream.get_account_stream
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/stream/account
+            Method: POST
+  TradierWatchListFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/handlers/tradier/
+      Handler: WatchList.watch_list
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref StockAPI
+            Path: /tradier/watch/{sub}/{name}
+            Method: GET, POST
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
