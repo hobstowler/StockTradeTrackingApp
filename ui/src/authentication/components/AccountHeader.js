@@ -6,6 +6,7 @@ import AccountMenu from "../../account/components/AccountMenu";
 import LoginOutlinedIcon from '@mui/icons-material/LoginOutlined';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import {useNavigate, useSearchParams} from "react-router-dom";
+import AccountConnectorMenu from "./AccountConnectorMenu";
 
 const AccountHeader = ({login, logout}) => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -16,7 +17,6 @@ const AccountHeader = ({login, logout}) => {
   const user = session?.user
 
   const theme = useTheme();
-  const navigate = useNavigate()
   const smallScreen = useMediaQuery(theme.breakpoints.up('sm'))
 
   useEffect(() => {
@@ -60,27 +60,15 @@ const AccountHeader = ({login, logout}) => {
               onClick={openMenu}
               sx={{height: '32px', width: '32px', cursor: 'pointer'}}
               alt={user?.user_metadata?.full_name || ''}
-              src={user?.user_metadata?.avatar_url}/>
+              src={user?.user_metadata?.avatar_url}
+            />
           </Box> :
           <Button variant='outlined' size='small' color='success' onClick={login} sx={{display: 'flex', flexDirection: 'row', gap: '12px', alignItems: 'center'}}>
             <Box sx={{mt: '1px'}}>Log In</Box>
             <LoginOutlinedIcon/>
           </Button>
         }
-        <IconButton
-          size='small'
-          onClick={() => {navigate('/auth/schwab')}}
-          sx={{
-            ml: '12px',
-            backgroundColor: theme.palette.grey[50],
-            '&:hover': {
-              backgroundColor: theme.palette.grey[100]
-            },
-            '& > svg': {
-              color: theme.palette.error.main
-            }}}>
-          <LinkOffIcon color='red' />
-        </IconButton>
+        <AccountConnectorMenu />
         <AccountMenu anchor={anchor} onClose={closeMenu} logout={logout}/>
       </Box>
     </Container>
